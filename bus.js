@@ -7,7 +7,7 @@ function mem_read(address) {
 
 function mem_write(address, value) {
    //bus_ops++;
-   if(address < 0xD000) memory[address] = value; // TODO disable ROM
+   if(address < 0xD000) memory[address] = value; 
    // 2048 D000
    // 2048 D800
    // 1024 E000
@@ -20,20 +20,11 @@ function mem_write(address, value) {
 
 function io_read(ioport) {  
    const port = ioport & 0xFF;
-   /*
    switch(port) {
-      case 0x2b: return joy0;  // joystick 8 directions
-      case 0x27: return joy1;  // joystick fire buttons
-      case 0x00: return printerReady;
-      //case 0x2e: return 0x00;  // joystick 2 not emulated yet
-      case 0x10:
-      case 0x11:
-      case 0x12:
-      case 0x13:
-      case 0x14:
-         return emulate_fdc ? floppy_read_port(port) : (port | 1);   
+      case 0xcd: 
+         console.log(key_pressed_port_cd);
+         return key_pressed_port_cd;  // ascii keyboard
    }
-   */
    console.warn(`read from unknown port ${hex(port)}h`);
    return 0x00;
 }

@@ -1,43 +1,4 @@
-const keyboard_matrix = new Uint8Array(13+1); // the hardware key matrix 6x13 rows // 1-based TODO fix
-const assign_table = { };                     // conversion table from PC key to Laser key
-let browser_keys_state = { };                 // keep track of which PC key was pressed to safe release it
-
-function clearKeyboardMatrix() {
-   // temporary hack attemping to solve the shift + key problem when 
-   // shift is released before the key
-   //console.log(keyboard_matrix);
-   keyboard_matrix.forEach((e,i)=>keyboard_matrix[i]=0);   
-   //console.log("keyboard cleared");
-}
-
-function isPressed(row, col) {
-   return ((keyboard_matrix[row] ) & col) === col;
-}
-
-function keyPress(row, col) {   
-   keyboard_matrix[row] |= col;
-}
-
-function keyRelease(row, col) {
-   keyboard_matrix[row] &= (~col);
-}
-
-function needsShift(pckey) {
-   const keyinfo = assign_table[pckey];
-   if(keyinfo === undefined) return undefined;
-   return keyinfo.shift;
-}
-
-function pckey_to_laserkey(pckey) {
-   const keyinfo = assign_table[pckey];
-   if(keyinfo === undefined) return undefined;
-   const laserkey = keys[keyinfo.key];
-   return laserkey;
-}
-
-function assignKey(pckey, laserkey, lasershift) {
-   assign_table[pckey] = { key: laserkey, shift: lasershift };
-}
+let key_pressed_port_cd = 0;
 
 function keyDown(e) { 
 
@@ -46,20 +7,24 @@ function keyDown(e) {
 
    let key = e.key;
 
-   // disable auto repeat, as it is handled on the Laser
+   /*
+   // disable auto repeat
    if(e.repeat) {
       e.preventDefault(); 
       return;
-   }   
+   } 
+   */  
 
    // *** special (non characters) keys ***
 
-   // RESET key is mapped as ALT+R or CTRL+Break or Pause
-   if(key=="Cancel" || key=="Pause" || (e.code == "KeyR" && e.altKey)) {
+   /*
+   // RESET key is mapped as ALT+R
+   if(e.code == "KeyR" && e.altKey) {
       cpu.reset();      
       e.preventDefault(); 
       return;
    }
+   */
 
    // ALT+P is power OFF/ON
    if(e.code == "KeyP" && e.altKey) {
@@ -68,6 +33,35 @@ function keyDown(e) {
       return;
    }   
 
+   if(e.code == "ShiftLeft" || 
+      e.code == "ShiftRight" || 
+      e.code == "AltLeft" || 
+      e.code == "AltRight" || 
+      e.code == "ControlLeft" ||
+      e.code == "ControlRight") {
+      e.preventDefault();
+      return;
+   }   
+
+   // do not disable function keys   
+   if(e.code == "F1" || 
+      e.code == "F2" || 
+      e.code == "F3" || 
+      e.code == "F4" || 
+      e.code == "F5" || 
+      e.code == "F6" || 
+      e.code == "F7" || 
+      e.code == "F8" || 
+      e.code == "F9" || 
+      e.code == "F10" || 
+      e.code == "F11" || 
+      e.code == "F12") {   
+      return;
+   }   
+
+   console.log(e.code);
+
+   /*
    // ALT+Left is rewind tape
    if(e.code == "ArrowLeft" && e.altKey) {
       rewind_tape();
@@ -80,60 +74,18 @@ function keyDown(e) {
       stop_tape();
       e.preventDefault(); 
       return;
-   }   
-   
-   // remap shift+home into Cls
-   if(key==="Home" && e.shiftKey === true) key = "Cls";
-   
-   const laser_key = pckey_to_laserkey(key);   
+   } 
+   */  
    
    // console.log("down",e);
-
-   // unhandled keys
-   if(laser_key === undefined) {       
-      // if(key !== "Shift" && key !== "AltGraph" && key !== "Alt") {
-      //    console.warn(`unhandled key '${key}'`);
-      // }
-      return;
-   }
-
-   // remember PC key pressed              
-   browser_keys_state[e.code] = key;
-   keyPress(laser_key.row, laser_key.col);
-
-   // does laser key needs shift pressed or unpressed?
-   const shift = needsShift(key);      
-         if(shift === true)  keyPress(1, 0x40);      
-   else if(shift === false) keyRelease(1, 0x40);      
+   
+   key_pressed_port_cd = e.keyCode;
+   cpu.interrupt(false, 0x70); // trigger interrupt mode 2 (im 2), jumps at $0070
 
    e.preventDefault();         
 }
 
 function keyUp(e) { 
-   let key = e.key;
-
-   // remap shift+home into Cls
-   if(key==="Home" && e.shiftKey === true) key = "Cls";
-   
-   // console.log("up",e);
-
-   // browser bug: AltGr + è,ò,à,+ causes Up event different key from Down event
-   // but that is handled in this routine as a side effect, so no need to worry about it
-
-   let laser_key = pckey_to_laserkey(key);
-
-   if(laser_key === undefined) return;
-
-   // remembers the key that was originally pressed
-   let pressedKey = browser_keys_state[e.code];
-   browser_keys_state[e.code] = undefined; // mark it as unpressed
-
-   laser_key = pckey_to_laserkey(pressedKey);
-   if(laser_key !== undefined) {
-      keyRelease(laser_key.row, laser_key.col); // release key  
-      keyRelease(1, 0x40);                      // always release shift
-   }
-         
    e.preventDefault();
 }
 

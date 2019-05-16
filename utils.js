@@ -133,13 +133,8 @@ function evkey(pcKey) {
 }
 
 function zap() {      
-   bank4.forEach((e,i)=>bank4[i]=i % 4 === 0 ? 0 : 0xFF);
-   bank5.forEach((e,i)=>bank5[i]=i % 4 === 0 ? 0 : 0xFF);
-   bank6.forEach((e,i)=>bank5[i]=i % 4 === 0 ? 0 : 0xFF);
-   bank7.forEach((e,i)=>bank7[i]=i % 4 === 0 ? 0 : 0);
-   banks.forEach((e,i)=>banks[i]=0);
-   vdc_border_color = 0;
-   vdc_text80_background = 0;
+   for(let t=0;t<memory.length;t++) memory[t] = 0;
+   initMem();   
    let state = cpu.getState();
    state.halted = true;
    cpu.setState(state);   
@@ -147,7 +142,8 @@ function zap() {
 
 function power() {      
    zap();
-   setTimeout(()=>cpu.reset(),200);
+   renderAllLines();
+   cpu.reset();
 }
 
 function stop() {   
@@ -218,7 +214,7 @@ function not_bit(b,n) {
 function dumpStack() {
    const sp = cpu.getState().sp;
 
-   for(let t=sp;t<=0xffff;t+=2) {
+   for(let t=sp;t<0xd000;t+=2) {
       const word = mem_read_word(t);
       console.log(`${hex(t,4)}: ${hex(word,4)}  (${word})`);
    }

@@ -7,22 +7,26 @@
 // 64K RAM
 const memory = new Uint8Array(65536).fill(0x00); 
 
-function rom_load(rom, address) {
-   for(let i=0; i<rom.length; i++) {
-      memory[address+i] = rom[i];
+function initMem() {
+   function rom_load(rom, address) {
+      for(let i=0; i<rom.length; i++) {
+         memory[address+i] = rom[i];
+      }
    }
+   
+   rom_load(rom_D000, 0xD000);
+   rom_load(rom_D800, 0xD800);
+   rom_load(rom_E000, 0xE000);
+   rom_load(rom_E400, 0xE400);
+   rom_load(rom_E800, 0xE800);
+   rom_load(rom_EC00, 0xEC00);
+   rom_load(rom_F000, 0xF000);
+   rom_load(rom_F800, 0xF800);
+   
+   rom_load([ 0xC3, 0x00, 0xE0 ], 0x0000); // JP E000
 }
 
-rom_load(rom_D000, 0xD000);
-rom_load(rom_D800, 0xD800);
-rom_load(rom_E000, 0xE000);
-rom_load(rom_E400, 0xE400);
-rom_load(rom_E800, 0xE800);
-rom_load(rom_EC00, 0xEC00);
-rom_load(rom_F000, 0xF000);
-rom_load(rom_F800, 0xF800);
-
-rom_load([ 0xC3, 0x00, 0xE0 ], 0x0000); // JP E000
+initMem();
 
 let speaker_A = 0;
 let cassette_bit_out = 0;
