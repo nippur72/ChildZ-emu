@@ -22,7 +22,7 @@ function io_read(ioport) {
    const port = ioport & 0xFF;
    switch(port) {
       case 0xcd: 
-         console.log(key_pressed_port_cd);
+         //console.log(key_pressed_port_cd);
          return key_pressed_port_cd;  // ascii keyboard
       case 0xd9:                  
          return 0x00;  // serial port ready ?
