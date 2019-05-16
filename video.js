@@ -184,14 +184,15 @@ function drawFrame_y_text(y)
       let bit76 = (code & (64+128) ) >> 6;
 
       let fg = 0;
-           if(bit76 === 0) fg = 14;
-      else if(bit76 === 1) fg = 15;
-      else if(bit76 === 2) fg = 1;
-      else if(bit76 === 3) fg = 9;
+           if(bit6 === 0) fg = 14;
+      else if(bit6 === 1) fg = 15;
       
       const row = (ry > 8) ? 0xFF : charset[startchar + ry];
       for(let xx=0;xx<8;xx++) {
-         const pixel_color = (row & (128>>xx)) > 0 ? 0 : fg;                                                   
+         let pixel_color;
+         
+         if(bit7 == 0) pixel_color = (row & (128>>xx)) > 0 ? 0 : fg;                                                   
+         else          pixel_color = (row & (128>>xx)) > 0 ? fg : 0;                                                   
          setPixel640(x*8+xx, y, pixel_color);
       }
    }
