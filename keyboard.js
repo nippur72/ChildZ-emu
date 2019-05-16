@@ -59,7 +59,7 @@ function keyDown(e) {
       return;
    }   
 
-   console.log(e.code);
+   //console.log(e.code);
 
    /*
    // ALT+Left is rewind tape

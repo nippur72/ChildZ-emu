@@ -24,56 +24,32 @@ function io_read(ioport) {
       case 0xcd: 
          console.log(key_pressed_port_cd);
          return key_pressed_port_cd;  // ascii keyboard
+      case 0xd9:                  
+         return 0x00;  // serial port ready ?
    }
    console.warn(`read from unknown port ${hex(port)}h`);
    return 0x00;
 }
 
-function io_write(port, value) { 
-   /*
-   const hi = (port & 0xFF00) >> 8;
-   const p = port & 0xFF;
-   if(hi>0 && (p>=0x10 && p<=0x1f)) {
-      console.log(`port write ${hex(port & 0xFF)} hi byte set to ${hex(hi)}, value=${hex(value)}`);
-   }
-   */   
+let ser_counter = 0;
+let ser_data = 0;
+
+function io_write(port, value) {    
    // console.log(`io write ${hex(port)} ${hex(value)}`)  
-   /*
    switch(port & 0xFF) {
-      case 0x40: banks[0] = value & 0xF; break;
-      case 0x41: banks[1] = value & 0xF; break;
-      case 0x42: banks[2] = value & 0xF; break;
-      case 0x43: banks[3] = value & 0xF; break;
-      case 0x44:          
-         vdc_page_7 = ((value & 0b1000) >> 3) === 0;
-         vdc_text80_enabled = value & 1; 
-         vdc_border_color = (value & 0xF0) >> 4
-              if((value & 0b110) === 0b000) vdc_graphic_mode_number = 5;              
-         else if((value & 0b111) === 0b010) vdc_graphic_mode_number = 4;
-         else if((value & 0b111) === 0b011) vdc_graphic_mode_number = 3;
-         else if((value & 0b111) === 0b110) vdc_graphic_mode_number = 2;
-         else if((value & 0b111) === 0b111) vdc_graphic_mode_number = 1;
-         else if((value & 0b110) === 0b100) vdc_graphic_mode_number = 0;                  
-         break;
-      case 0x45: 
-         vdc_text80_foreground = (value & 0xF0) >> 4;
-         vdc_text80_background = value & 0x0F;         
-         break;
-      case 0x0d:
-         printerWrite(value);
-      case 0x0e:
-         // printer port duplicated here
-         return;                           
-      case 0x10:
-      case 0x11:
-      case 0x12:
-      case 0x13:
-      case 0x14:
-         if(emulate_fdc) floppy_write_port(port & 0xFF, value); 
+      case 0xd9:
+         // 1bit start (1), 7 data bits, 1bit stop (0)          
+         if(ser_counter>0 && ser_counter<9) {
+            // data bit received
+            ser_data = (ser_data >> 1) | (value>0 ? 0 : 128); 
+         }         
+         ser_counter++;
+         if(ser_counter === 10) {
+            ser_counter = 0;
+            printerWrite(ser_data & 0x7F);            
+            ser_data = 0;
+         }
          return;     
-      default:
-         console.warn(`write on unknown port ${hex(port)}h value ${hex(value)}h`);
    } 
-   */  
    console.warn(`write on unknown port ${hex(port)}h value ${hex(value)}h`);
 }
