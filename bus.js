@@ -38,6 +38,7 @@ function io_write(port, value) {
    // console.log(`io write ${hex(port)} ${hex(value)}`)  
    switch(port & 0xFF) {
       case 0xd9:
+         cassette_bit_out = value > 0;
          // 1bit start (1), 7 data bits, 1bit stop (0)          
          if(ser_counter>0 && ser_counter<9) {
             // data bit received
