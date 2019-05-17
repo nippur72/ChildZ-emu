@@ -157,26 +157,20 @@ function drawFrame_y_border(y)
    }
 }
 
-let video_ram = 0xA800;
+const video_ram = 0xA800;
 
 function drawFrame_y_text(y) 
 {           
-   let s = 13;
+   let lines_per_char = 13;
 
-   /*
-   // 64 columns text mode             
-   let ry = y & 0b111;
-   let oy = (y & 0b11111000) >> 3;   
-   ry = ry + 1; if(ry === 8) ry=0;
-   */
-
-   let ry = y % s;
-   let oy = (y - ry) / s;
-   ry = ry + 1; if(ry == 8) ry = 0;   
+   let y_offset = y % lines_per_char;
+   let row = (y - y_offset) / lines_per_char;
+   
+   let y_offset_rotated = (y_offset+7) % 8;  // characters are 1 line rotated in the ROM
 
    for(let x=0; x<64; x++)
    {
-      const code = memory[video_ram+(oy*64)+x];  
+      const code = memory[video_ram+(row*64)+x];  
       
       let startchar = (code % 64) * 8;      
       let bit7 = (code & 128) >> 7;
@@ -187,12 +181,13 @@ function drawFrame_y_text(y)
            if(bit6 === 0) fg = 14;
       else if(bit6 === 1) fg = 15;
       
-      const row = (ry > 8) ? 0xFF : charset[startchar + ry];
+      const bitmap = (y_offset < 2 || y_offset > 9) ? 0xFF : charset[startchar + y_offset_rotated];
+
       for(let xx=0;xx<8;xx++) {
          let pixel_color;
          
-         if(bit7 == 0) pixel_color = (row & (128>>xx)) > 0 ? 0 : fg;                                                   
-         else          pixel_color = (row & (128>>xx)) > 0 ? fg : 0;                                                   
+         if(bit7 == 0) pixel_color = (bitmap & (128>>xx)) > 0 ? 0 : fg;                                                   
+         else          pixel_color = (bitmap & (128>>xx)) > 0 ? fg : 0;                                                   
          setPixel640(x*8+xx, y, pixel_color);
       }
    }
