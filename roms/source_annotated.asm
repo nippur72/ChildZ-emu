@@ -5184,6 +5184,11 @@ LEC8A:  LD      HL,0A800h
         LDIR
         RET
 
+; RDTAST
+; Legge la locazione KEYPRESS scritta dal gestore interrupt della tastiera
+; Se il bit 7 è 1, allora il tasto è stato premuto, resetta il bit, riscrive
+; nella locazione KEYPRESS e lascia il risultato nel registro A
+;
 ;$EC98
 RDTAST:  
         LD      A,(KEYPRESS)
