@@ -7,7 +7,7 @@ function mem_read(address) {
 
 function mem_write(address, value) {
    //bus_ops++;
-   if(address < 0xD000) memory[address] = value; 
+   if(address < 0x8000 || (address >= 0xA800 && address <= 0xAFFF)) memory[address] = value; 
    // 2048 D000
    // 2048 D800
    // 1024 E000
