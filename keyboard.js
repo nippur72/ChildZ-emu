@@ -33,7 +33,7 @@ function keyDown(e) {
       return;
    }   
 
-   //console.log(`e.key=${e.key} e.code=${e.code}`);
+   // console.log(`e.key=${e.key} e.code=${e.code}`);
 
    let k = 0;
 
@@ -45,6 +45,10 @@ function keyDown(e) {
    else if(e.code === 'Delete')      k = 8;
    else if(e.code === 'ArrowLeft')   k = '<'.charCodeAt(0);
    else if(e.code === 'ArrowRight')  k = '>'.charCodeAt(0);
+   else if(e.key === 'ù' || e.key === '§')  k = 10;
+   else if(e.key === 'ò' || e.key === 'ç')  k = '@'.charCodeAt(0);
+   else if(e.key === 'à' || e.key === '°')  k = '#'.charCodeAt(0);
+   else if(e.key === 'è' || e.key === 'é')  k = '['.charCodeAt(0);   
 
    // control codes
    if((e.ctrlKey || e.altKey)) {      
@@ -82,6 +86,8 @@ function keyDown(e) {
       else if(e.key.toUpperCase() == '_' || e.key.toUpperCase() == '-') k = 31;      
       else if(e.key.toUpperCase() == ',')  k = '<'.charCodeAt(0);
       else if(e.key.toUpperCase() == '.')  k = '>'.charCodeAt(0);
+      else if(e.key.toUpperCase() == '8') k = '^'.charCodeAt(0);
+      else if(e.key.toUpperCase() == '9') k = '_'.charCodeAt(0);
    }
 
    if(e.code == "ShiftLeft" || 
@@ -132,11 +138,11 @@ function keyDown(e) {
 
    if(k !== 0) key_pressed_port_cd = k;
    else {
-      if(e.key.length === 1) {
+      if(e.key.length === 1) {         
          key_pressed_port_cd = e.key.toUpperCase().charCodeAt(0);
       }
    }
-   
+      
    cpu.interrupt(false, 0x70); // trigger interrupt mode 2 (im 2), jumps at $0070
    e.preventDefault();         
 }

@@ -16,4 +16,6 @@ A standard ASCII keyboard is emulated.
 - Left and Right Cursor keys are mapped to `<` and `>` (avalaible also via `Ctrl`+`,` and `Ctrl`+`.`)
 - Ascii codes below 32 can be produced by `Ctrl` + letter or `Alt` + letter (because the browser prevent using some Ctrl keys)
 - `NULL` is `Ctrl` + `0` or `Ctrl` + `@`
+- `{` and `}` are `Ctrl` + `8` and `Ctrl` + `9`
+- `LF` is `ù` on italian keyboard layout
 - `Ctrl` + `Alt` + `P` powers on/off the machine
