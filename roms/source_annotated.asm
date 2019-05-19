@@ -1,4 +1,6 @@
-RAMSIZE EQU 0131h
+KEYPRESS EQU 0098h
+RAMSIZE  EQU 0131h
+
 
         ORG     0D000h
 
@@ -3376,7 +3378,7 @@ LE369:  LD      A,(00B9h)
         ; Referenced from E3DF, E3BC, E3C2, E3B6
         ; --- START PROC LE374 ---
 LE374:  SET     7,(HL)
-        CALL    LEC98
+        CALL    RDTAST
         PUSH    HL
         PUSH    BC
         LD      HL,0E3E8h       
@@ -4752,7 +4754,7 @@ LEA8D:  LD      A,50h           ; 'P'
 LEA8F:  LD      (00B2h),A
 
         ; Referenced from EAAD
-LEA92:  LD      HL,0098h        
+LEA92:  LD      HL,KEYPRESS        
         BIT     7,(HL)
         JR      NZ,LEAAF
         LD      HL,0ABF9h       
@@ -5182,13 +5184,13 @@ LEC8A:  LD      HL,0A800h
         LDIR
         RET
 
-        ; Referenced from E376, ED49, FFF7, F1D9, EC9D, EF9F, F06A, F173
-        ; --- START PROC LEC98 ---
-LEC98:  LD      A,(0098h)
+;$EC98
+RDTAST:  
+        LD      A,(KEYPRESS)
         BIT     7,A
-        JR      Z,LEC98
+        JR      Z,RDTAST
         RES     7,A
-        LD      (0098h),A
+        LD      (KEYPRESS),A
         RET
 
 LECA5:  DB      "0123456789ABCDEF"
@@ -5196,7 +5198,7 @@ LECA5:  DB      "0123456789ABCDEF"
         ; Entry Point
         ; --- START PROC LECB5 ---
 LECB5:  PUSH    AF
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         CP      9Bh
         JR      Z,LECC8
         IN      A,(0CDh)
@@ -5205,7 +5207,7 @@ LECB5:  PUSH    AF
         JR      Z,LECCC
 
         ; Referenced from ECE1
-LECC5:  LD      (0098h),A
+LECC5:  LD      (KEYPRESS),A
 
         ; Referenced from ECBB
 LECC8:  POP     AF
@@ -5249,7 +5251,7 @@ LECE3:  LD      (0086h),BC
         ; --- START PROC LED0F ---
 LED0F:  LD      HL,0ECB5h       
         LD      (0070h),HL
-        LD      HL,0098h        
+        LD      HL,KEYPRESS        
         LD      (HL),00h
         INC     HL
         LD      (HL),0C3h
@@ -5293,7 +5295,7 @@ LED45:  LD      B,00h
 LED47:  SET     7,(HL)
 
         ; Referenced from ED85, ED99, EDA0, EDB3
-LED49:  CALL    LEC98
+LED49:  CALL    RDTAST
         CP      50h             ; 'P'
         JP      Z,LEE58
         CP      54h             ; 'T'
@@ -5321,7 +5323,7 @@ LED58:  JP      Z,LEE70
         LD      A,B
         CP      30h             ; '0'
         JR      Z,LED49
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         CP      3Eh             ; '>'
         JP      Z,LEE15
         EXX
@@ -5334,7 +5336,7 @@ LED58:  JP      Z,LEE70
         BIT     7,A
         JR      NZ,LED49
         CP      48h             ; 'H'
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         JR      NZ,LEDD7
         EXX
         LD      HL,0ECAFh       
@@ -5468,7 +5470,7 @@ LEE70:  LD      B,01h
         CALL    LEC60
         RES     7,(HL)
         LD      HL,0ABCBh       
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         CP      47h             ; 'G'
         JR      NZ,LEE5D
         LD      (0ABC4h),A
@@ -5479,11 +5481,11 @@ LEE70:  LD      B,01h
         ; Referenced from ED53
 LEEA5:  LD      A,(0ABC4h)
         CP      0D0h
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         JR      Z,LEE70
         LD      A,(0AB84h)
         CP      4Dh             ; 'M'
-        LD      A,(0098h)
+        LD      A,(KEYPRESS)
         JR      NZ,LEE70
         PUSH    HL
         LD      DE,0018h        
@@ -5617,7 +5619,7 @@ LEF9B:  INC     DE
         LD      (DE),A
 
         ; Referenced from EFB7
-LEF9F:  CALL    LEC98
+LEF9F:  CALL    RDTAST
         CP      0Dh
         JP      Z,LED3F
         CP      20h             ; ' '
@@ -5719,7 +5721,7 @@ LF059:  CALL    LF14D
 
         ; Referenced from F084, F092, F099, F09E, F0A7, F0B8
 LF068:  LD      (HL),0A0h
-        CALL    LEC98
+        CALL    RDTAST
         RES     7,(HL)
         CP      1Ah
         JR      Z,LF059
@@ -5905,7 +5907,7 @@ LF169:  INC     DE
 LF16C:  CALL    LF1B5
         BIT     1,A
         JR      Z,LF14A
-        CALL    LEC98
+        CALL    RDTAST
         CP      0Dh
         JR      Z,LF17F
         CALL    LF14D
@@ -5924,7 +5926,7 @@ LF185:  LD      HL,5050h
         LD      HL,(012Bh)
         CALL    LF1B8
         CALL    LE2F5
-        LD      HL,0098h        
+        LD      HL,KEYPRESS        
         BIT     7,(HL)
         JR      Z,LF1AD
         RES     7,(HL)
@@ -5977,7 +5979,7 @@ LF1D4:  DB      0FFh
 
         ; Referenced from E020, E2DA, FF5E
         ; --- START PROC LF1D9 ---
-LF1D9:  CALL    LEC98
+LF1D9:  CALL    RDTAST
         JP      WARMBOOT
 
         ; Referenced from E01D
@@ -9033,7 +9035,7 @@ LFFF4:  JP      LEC00
 
         ; Entry Point
         ; --- START PROC LFFF7 ---
-LFFF7:  JP      LEC98
+LFFF7:  JP      RDTAST
 
         ; Entry Point
         ; --- START PROC LFFFA ---
