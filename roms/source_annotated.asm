@@ -1,6 +1,9 @@
 KEYPRESS EQU 0098h
 RAMSIZE  EQU 0131h
 
+ESCAPE   EQU 1Bh
+
+IO_KEYBOARD EQU 0CDh
 
         ORG     0D000h
 
@@ -5200,41 +5203,47 @@ RDTAST:
 
 LECA5:  DB      "0123456789ABCDEF"
 
-        ; Entry Point
-        ; --- START PROC LECB5 ---
-LECB5:  PUSH    AF
+;
+; Keyboard interrupt routine. Alla pressione di un tasto viene generato un 
+; interrupt di tipo 2 (IM 2) sulla CPU che risponde saltando a questa routine.
+; 
+
+;ECB5
+INT_KEYBOARD:  
+        PUSH    AF
         LD      A,(KEYPRESS)
-        CP      9Bh
-        JR      Z,LECC8
-        IN      A,(0CDh)
-        SET     7,A
-        CP      9Bh
-        JR      Z,LECCC
-
-        ; Referenced from ECE1
-LECC5:  LD      (KEYPRESS),A
-
-        ; Referenced from ECBB
-LECC8:  POP     AF
+        CP      ESCAPE+128
+        JR      Z,INT_EXIT         ; se c'è un tasto ESC premuto non ancora gestito esce senza fare niente
+        IN      A,(IO_KEYBOARD)
+        SET     7,A                ; imposta il bit 7 per indicare "tasto premuto" ma non ancora gestito
+        CP      ESCAPE+128
+        JR      Z, HANDLE_ESC_KEY  ; Se premuto ESC tratta in maniera speciale        
+LECC5:  LD      (KEYPRESS),A        
+INT_EXIT:  
+        POP     AF
         EI
         RETI
-
-        ; Referenced from ECC3
-LECCC:  LD      (008Ah),HL
+        
+HANDLE_ESC_KEY:  
+        LD      (008Ah),HL           ; salva HL, SP e le due word dello stack      
         POP     HL
         LD      (0084h),HL
         POP     HL
         LD      (0080h),HL
-        LD      (0082h),SP
-        LD      HL,0ECE3h       
+        LD      (0082h),SP        
+        LD      HL, ESC_KEY_ROUTINE  ; imposta la routine di ESC al ritorno dall'interrupt
         PUSH    HL
         DEC     SP
         DEC     SP
-        JR      LECC5
+        JR      LECC5                ; resume interrupt routine and exit
 
-        ; Entry Point
-        ; --- START PROC LECE3 ---
-LECE3:  LD      (0086h),BC
+;
+; Gestisce il tasto di ESC - chiamata dopo che è uscito dalla
+; routine di interrupt della tastiera
+;
+;$ECE3
+ESC_KEY_ROUTINE:
+        LD      (0086h),BC
         LD      (0088h),DE
         EX      AF,AF'
         PUSH    AF
