@@ -3213,6 +3213,7 @@ LE293:  LD      B,01h
 
         ; Entry Point
         ; --- START PROC LE29C ---
+WRITEA:        
 LE29C:  CALL    LEC8A
         LD      HL,0E2E6h       
         CALL    LE0BD

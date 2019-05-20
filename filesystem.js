@@ -1,4 +1,4 @@
-const STORAGE_KEY = "laser500";
+const STORAGE_KEY = "CHILDZ";
 
 const idb = idbKeyval;
 const store = new idb.Store(STORAGE_KEY, STORAGE_KEY);
@@ -78,7 +78,7 @@ async function save(filename, p1, p2) {
 }
 
 function loadBytes(bytes, address, fileName) {
-   const startAddress = (address === undefined) ? 0x8995 : address;
+   const startAddress = (address === undefined) ? 0x0400 : address;
    const end = startAddress + bytes.length - 1;
 
    for(let i=0,t=startAddress;t<=end;i++,t++) {
@@ -86,7 +86,7 @@ function loadBytes(bytes, address, fileName) {
    }
 
    // modify end of basic program pointer   
-   if(startAddress === 0x8995) mem_write_word(0x83E9, end+1);   
+   //if(startAddress === 0x8995) mem_write_word(0x83E9, end+1);   
 
    if(fileName === undefined) fileName = "autoload";
    console.log(`loaded "${fileName}" ${bytes.length} bytes from ${hex(startAddress,4)}h to ${hex(end,4)}h`);
@@ -94,13 +94,12 @@ function loadBytes(bytes, address, fileName) {
 
 async function load_file(fileName, address) {   
    const bytes = await readFile(fileName);
-   loadBytes(bytes, address, fileName);   
-   cpu.reset();   
+   loadBytes(bytes, address, fileName);  
 }
 
 async function save_file(filename, start, end) {
-   if(start === undefined) start = mem_read_word(0x8041);
-   if(end === undefined) end = mem_read_word(0x83E9)-1;
+   //if(start === undefined) start = mem_read_word(0x8041);
+   //if(end === undefined) end = mem_read_word(0x83E9)-1;
 
    const prg = [];
    for(let i=0,t=start; t<=end; i++,t++) {
