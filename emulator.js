@@ -2,8 +2,6 @@
 
 // *** ChildZ hardware ***
 
-// TODO autoload disabled
-
 // 64K RAM
 const memory = new Uint8Array(65536).fill(0x00); 
 
@@ -314,15 +312,8 @@ parseQueryStringCommands();
 // starts drawing frames
 oneFrame();
 
-/*
 // autoload program and run it
 if(autoload !== undefined) {
-   zap();
-   cpu.reset();
-   
-   setTimeout(()=>{
-      loadBytes(autoload);   
-      pasteLine("RUN\r\n");
-   }, 200);
+   // gives 1 sec delay, so that load happens after ram is initialized by the eprom
+   setTimeout(()=>loadBytes(autoload), 1000);
 }
-*/
