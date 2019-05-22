@@ -110,11 +110,21 @@ function renderLines(nlines, hidden) {
    }
 }
 
+let haltD = false;
+
 function renderAllLines() {   
    // cpu.interrupt(false, 0);                         
    renderLines(HIDDEN_SCANLINES_TOP, true);               
    renderLines(SCREEN_H, false);                    
    renderLines(HIDDEN_SCANLINES_BOTTOM, true);               
+
+   // update HALT status
+   let halt = cpu.getState().halted;
+   if(haltD != halt) {
+      const element = document.getElementById("halt");
+      element.style.display = halt ? "block" : "none";
+   }
+   haltD = halt;
 }
 
 let nextFrame;
