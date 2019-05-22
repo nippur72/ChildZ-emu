@@ -1,5 +1,6 @@
 KEYPRESS EQU 0098h
 RAMSIZE  EQU 0131h
+TEMPO    EQU 00B2h
 
 ESCAPE   EQU 1Bh
 
@@ -2986,7 +2987,7 @@ LE123:  XOR     A
 LE12A:  LD      A,(00CAh)
         INC     A
         LD      (00CAh),A
-        CALL    LE2F5
+        CALL    WAIT
         LD      A,(00C9h)
         CP      00h
         JR      Z,LE12A
@@ -3011,7 +3012,7 @@ LE148:  XOR     A
 LE152:  LD      A,(00CAh)
         INC     A
         LD      (00CAh),A
-        CALL    LE2F5
+        CALL    WAIT
         LD      A,(00C9h)
         CP      00h
         JR      Z,LE152
@@ -3066,7 +3067,7 @@ LE18B:  LD      A,0FFh
         LD      A,20h           ; ' '
         CALL    LE1C8
         LD      HL,0101h        
-        LD      (00B2h),HL
+        LD      (TEMPO),HL
         XOR     A
         LD      (00C7h),A
         LD      (00CAh),A
@@ -3075,17 +3076,17 @@ LE18B:  LD      A,0FFh
 
         ; Referenced from E6FF, E2D7, E0F1
         ; --- START PROC LE1BE ---
-LE1BE:  LD      (00B2h),HL
-        CALL    LE2F5
+LE1BE:  LD      (TEMPO),HL
+        CALL    WAIT
         XOR     A
         OUT     (0D9h),A
         RET
 
         ; Referenced from E1E2, E1AA
         ; --- START PROC LE1C8 ---
-LE1C8:  LD      (00B2h),HL
+LE1C8:  LD      (TEMPO),HL
         OUT     (0D9h),A
-        CALL    LE2F5
+        CALL    WAIT
         RET
 
         ; Referenced from E6E0, E2C3
@@ -3100,7 +3101,7 @@ LE1D1:  LD      A,0FFh
         LD      A,08h
         CALL    LE1C8
         LD      A,01h
-        LD      (00B3h),A
+        LD      (TEMPO+1),A
         LD      B,50h           ; 'P'
         LD      A,50h           ; 'P'
         LD      (00CBh),A
@@ -3147,14 +3148,14 @@ LE208:  PUSH    HL
         ; --- START PROC LE23D ---
 LE23D:  PUSH    BC
         LD      A,(00CBh)
-        LD      (00B2h),A
-        CALL    LE2F5
+        LD      (TEMPO),A
+        CALL    WAIT
         IN      A,(0D9h)
         OR      02h
         OUT     (0D9h),A
         LD      A,01h
-        LD      (00B2h),A
-        CALL    LE2F5
+        LD      (TEMPO),A
+        CALL    WAIT
         IN      A,(0D9h)
         AND     0FDh
         OUT     (0D9h),A
@@ -3245,33 +3246,31 @@ LE2DD:  DB      "END WRITEPROGRAM NAME ? "
 
 
         ; Referenced from FFDF, E244, E252, E1C1, E159, EAA4, EAAA, E1CD, E131, EAD7, EACB, F191, F1B0
-        ; --- START PROC LE2F5 ---
-LE2F5:  EXX
-        LD      DE,(00B2h)
-        INC     E
+        ; --- START PROC WAIT ---
 
-        ; Referenced from E306
+; WAIT - Aspetta un certo tempo.
+; In TEMPO+1 numero di tempi di 250 microsecondi da attendere. 
+; In TEMPO un moltiplicatore, NAX = FEFE. 
+; Al termine tutti i registri distrutti, anche i registri alternativi.
+
+;$E2F5
+WAIT:   EXX
+        LD      DE,(TEMPO)
+        INC     E
 LE2FB:  DEC     E
         JR      NZ,LE300
         EXX
         RET
 
-        ; Referenced from E2FC
-LE300:  LD      A,(00B3h)
+LE300:  LD      A,(TEMPO+1)
         LD      D,A
         INC     D
-
-        ; Referenced from E30B
 LE305:  DEC     D
         JR      Z,LE2FB
         CALL    LE30D
         JR      LE305
 
-        ; Referenced from E308
-        ; --- START PROC LE30D ---
 LE30D:  LD      B,04h
-
-        ; Referenced from E30F
 LE30F:  DJNZ    LE30F
         RET
 
@@ -4755,7 +4754,7 @@ LEA8D:  LD      A,50h           ; 'P'
 
         ; Referenced from FF76
         ; --- START PROC LEA8F ---
-LEA8F:  LD      (00B2h),A
+LEA8F:  LD      (TEMPO),A
 
         ; Referenced from EAAD
 LEA92:  LD      HL,KEYPRESS        
@@ -4765,11 +4764,11 @@ LEA92:  LD      HL,KEYPRESS
         SET     7,(HL)
         PUSH    HL
         LD      A,30h           ; '0'
-        LD      (00B3h),A
-        CALL    LE2F5
+        LD      (TEMPO+1),A
+        CALL    WAIT
         POP     HL
         RES     7,(HL)
-        CALL    LE2F5
+        CALL    WAIT
         JR      LEA92
 
         ; Referenced from EA97
@@ -4787,8 +4786,8 @@ LEAAF:  LD      A,(HL)
         SLA     A
         SLA     A
         SLA     A
-        LD      (00B3h),A
-        CALL    LE2F5
+        LD      (TEMPO+1),A
+        CALL    WAIT
         RET
 
         ; Referenced from EAEA, EB00
@@ -4796,8 +4795,8 @@ LEAAF:  LD      A,(HL)
 LEACF:  PUSH    AF
         PUSH    BC
         LD      HL,0C06h        
-        LD      (00B2h),HL
-        CALL    LE2F5
+        LD      (TEMPO),HL
+        CALL    WAIT
         POP     BC
         POP     AF
         RET
@@ -5937,10 +5936,10 @@ LF17F:  LD      HL,(012Bh)
         ; Referenced from F056, F1B3
         ; --- START PROC LF185 ---
 LF185:  LD      HL,5050h        
-        LD      (00B2h),HL
+        LD      (TEMPO),HL
         LD      HL,(012Bh)
         CALL    LF1B8
-        CALL    LE2F5
+        CALL    WAIT
         LD      HL,KEYPRESS        
         BIT     7,(HL)
         JR      Z,LF1AD
@@ -5955,7 +5954,7 @@ LF185:  LD      HL,5050h
 
         ; Referenced from F199
 LF1AD:  CALL    LF14D
-        CALL    LE2F5
+        CALL    WAIT
         JR      LF185
 
         ; Referenced from F16C
@@ -9018,7 +9017,7 @@ LFFDC:  JP      LE312
 
         ; Entry Point
         ; --- START PROC LFFDF ---
-LFFDF:  JP      LE2F5
+LFFDF:  JP      WAIT
 
         ; Referenced from DA6E
         ; --- START PROC LFFE2 ---
