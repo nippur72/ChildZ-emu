@@ -178,7 +178,7 @@ function drawFrame_y_text(y)
       let bit76 = (code & (64+128) ) >> 6;
 
       let fg = 0;
-           if(bit6 === 0) fg = 14;
+           if(bit6 === 0) fg = 7;
       else if(bit6 === 1) fg = 15;
       
       const bitmap = (y_offset < 2 || y_offset > 9) ? 0xFF : charset[startchar + y_offset_rotated];
