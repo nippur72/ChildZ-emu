@@ -10,12 +10,13 @@ FLARIG     EQU 0124h   ; bit 7: 1 output to printer, 0 to video
 RAMSIZE    EQU 0131h   ; (word) size of the ram calculated at boot
 
 ; EPROM routines
-SCROLL     EQU $EC40
-PROMPT     EQU $EC4B
-RDTAST     EQU $EC98
-WAIT       EQU $E2F5
-PRICAR     EQU $EA58
-PRLA36     EQU $EADD        
+SCROLL      EQU $EC40
+PROMPT      EQU $EC4B
+RDTAST      EQU $EC98
+WAIT        EQU $E2F5
+PRICAR      EQU $EA58
+RESETCURPOS EQU $EA6F
+PRLA36      EQU $EADD        
 
 ; memory configuration
 FREERAM    EQU $025F  ; start of free RAM address (end of low memory workspace) 

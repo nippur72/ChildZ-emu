@@ -3,6 +3,7 @@ KEYPRESS EQU 0098h
 TEMPO    EQU 00B2h
 FLARIG   EQU 0124h
 RAMSIZE  EQU 0131h
+CURPOS   EQU 011Eh
 
 ESCAPE   EQU 1Bh
 
@@ -1290,7 +1291,7 @@ LD968:  LD      HL,(RAMSIZE)
         LD      (011Ah),HL
         LD      (011Ch),HL
         LD      HL,0ABC4h       
-        LD      (011Eh),HL
+        LD      (CURPOS),HL
         LD      A,64h           ; 'd'
         LD      (0120h),A
         XOR     A
@@ -4734,12 +4735,14 @@ PRICAR:
         CP      0Dh
         JR      NZ,LEA76
         CALL    LEA8D
+        
+RESETCURPOS:
         LD      HL,0ABC4h       
-        LD      (011Eh),HL
+        LD      (CURPOS),HL
         RET
 
-; prints character 0Dh to video        
-LEA76:  LD      HL,(011Eh)
+; prints character to video        
+LEA76:  LD      HL,(CURPOS)
         LD      D,A
         LD      A,0FAh
         CP      L
@@ -4751,11 +4754,10 @@ LEA76:  LD      HL,(011Eh)
         POP     HL
 LEA87:  LD      (HL),A
         INC     HL
-        LD      (011Eh),HL
+        LD      (CURPOS),HL
         RET
 
-        ; Referenced from FF79, EA6C
-        ; --- START PROC LEA8D ---
+; prints character 0Dh to video
 LEA8D:  LD      A,50h           ; 'P'
 
         ; Referenced from FF76
