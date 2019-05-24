@@ -1,10 +1,13 @@
+; low memory workspace 
 KEYPRESS EQU 0098h
-RAMSIZE  EQU 0131h
 TEMPO    EQU 00B2h
+FLARIG   EQU 0124h
+RAMSIZE  EQU 0131h
 
 ESCAPE   EQU 1Bh
 
-IO_KEYBOARD EQU 0CDh
+; I/O ports
+KEYBOARD EQU 0CDh
 
         ORG     0D000h
 
@@ -99,7 +102,7 @@ LD164:  LD      HL,0206h
 
         ; Referenced from D208, D22D, D26F, D3E7, D871, D1C5, D2F5, D2ED
         ; --- START PROC LD192 ---
-LD192:  CALL    LEC40
+LD192:  CALL    SCROLL
         LD      DE,0ABC5h       
         CALL    LE35B
         LD      A,(00B6h)
@@ -174,7 +177,7 @@ LD1E6:  LD      HL,(0200h)
         LD      HL,0000h        
         LD      (0208h),HL
         LD      (0206h),HL
-        CALL    LEC40
+        CALL    SCROLL
         LD      HL,0D014h       
         LD      DE,0ABC5h       
         LD      BC,000Dh        
@@ -255,7 +258,7 @@ LD293:  AND     0Fh
 
         ; Referenced from D34E, D2EA
         ; --- START PROC LD298 ---
-LD298:  CALL    LEC40
+LD298:  CALL    SCROLL
 
         ; Referenced from D2C9
 LD29B:  CALL    LD351
@@ -833,7 +836,7 @@ LD5D6:  LD      A,(0239h)
         ; Referenced from D5C2
 LD5F2:  INC     HL
         LD      (0237h),HL
-        CALL    LEC40
+        CALL    SCROLL
         LD      DE,0ABC4h       
         LD      HL,0D15Dh       
         CALL    LD727
@@ -862,7 +865,7 @@ LD613:  LD      A,(HL)
         ; Referenced from D5D4
 LD62B:  LD      A,80h
         LD      (IY+00h),A
-        CALL    LEC40
+        CALL    SCROLL
         LD      DE,0ABC4h       
         LD      HL,0D153h       
         CALL    LD727
@@ -885,7 +888,7 @@ LD649:  LD      A,(HL)
 
         ; Referenced from D721, D653
         ; --- START PROC LD657 ---
-LD657:  CALL    LEC40
+LD657:  CALL    SCROLL
 
         ; Referenced from D695, D6BA
         ; --- START PROC LD65A ---
@@ -1019,7 +1022,7 @@ LD729:  LD      BC,0ABFCh
         ; Referenced from D72E
 LD73E:  POP     DE
         CALL    LD51F
-        CALL    LEC40
+        CALL    SCROLL
         POP     HL
         LD      DE,0ABC4h       
         LD      (0235h),DE
@@ -1079,7 +1082,7 @@ LD78B:  INC     HL
         JR      NZ,LD785
         CALL    LE6D4
         CALL    LD75A
-        CALL    LEC40
+        CALL    SCROLL
         LD      HL,0E2DDh       
 
         ; Referenced from D839
@@ -1087,7 +1090,7 @@ LD78B:  INC     HL
 LD7C0:  LD      BC,0009h        
         LD      DE,0ABC5h       
         LDIR
-        CALL    LEC40
+        CALL    SCROLL
         LD      HL,(0206h)
         INC     HL
         CALL    LE0BD
@@ -1096,7 +1099,7 @@ LD7C0:  LD      BC,0009h
         ; --- START PROC LD7D2 ---
 LD7D2:  LD      HL,0000h        
         LD      (0206h),HL
-        CALL    LEC40
+        CALL    SCROLL
         LD      A,13h
         JP      LD1A2
 
@@ -1138,7 +1141,7 @@ LD808:  CALL    LD3EA
         CP      2Ah             ; '*'
         JR      NZ,LD808
         CALL    LD74F
-        CALL    LEC40
+        CALL    SCROLL
         LD      HL,0E0F5h       
         JP      LD7C0
 
@@ -1292,9 +1295,9 @@ LD968:  LD      HL,(RAMSIZE)
         LD      (0120h),A
         XOR     A
         LD      (0123h),A
-        LD      A,(0124h)
+        LD      A,(FLARIG)
         SET     7,A
-        LD      (0124h),A
+        LD      (FLARIG),A
         CALL    LFF85
 
         ; Referenced from D9B8, DA97
@@ -4639,18 +4642,18 @@ LE9E8:  INC     HL
         LD      A,(HL)
         PUSH    BC
         PUSH    HL
-        CALL    LEA58
+        CALL    PRICAR
         POP     HL
         POP     BC
         DJNZ    LE9E8
         LD      A,0Dh
-        CALL    LEA58
+        CALL    PRICAR
         LD      HL,(011Ch)
         LD      A,(HL)
         AND     0Fh
         LD      B,A
         CALL    LEA21
-        LD      HL,0124h        
+        LD      HL,FLARIG        
         BIT     7,(HL)
         JR      Z,LEA1B
 
@@ -4685,7 +4688,7 @@ LEA22:  DJNZ    LEA25
         ; Referenced from EA22
 LEA25:  PUSH    BC
         LD      A,0Ah
-        CALL    LEA58
+        CALL    PRICAR
         LD      A,(0123h)
         INC     A
         LD      (0123h),A
@@ -4703,7 +4706,7 @@ LEA3A:  LD      A,(0123h)
         PUSH    AF
         PUSH    BC
         LD      A,0Ah
-        CALL    LEA58
+        CALL    PRICAR
         LD      A,(0123h)
         INC     A
         LD      (0123h),A
@@ -4715,12 +4718,17 @@ LEA3A:  LD      A,(0123h)
         RET
 
         ; Referenced from FF7C, EB7B, EB84, EB89, EA45, EA28, E9EC, E9F5
-        ; --- START PROC LEA58 ---
-LEA58:  LD      HL,0124h        
+        ; --- START PROC PRICAR ---
+
+; Consente di stampare il carattere contenuto in A sulla LA36 o	sul video
+; a seconda se il bit ZERO di FLARIG è 1 o 0.
+;$EA58
+PRICAR:	
+        LD      HL,FLARIG        
         BIT     0,(HL)
         JR      NZ,LEADD
         CP      0Ah
-        JP      Z,LEC40
+        JP      Z,SCROLL
         CP      07h
         JR      Z,LEADD
         CP      0Dh
@@ -4739,7 +4747,7 @@ LEA76:  LD      HL,(011Eh)
         JR      NZ,LEA87
         LD      L,0C4h
         PUSH    HL
-        CALL    LEC40
+        CALL    SCROLL
         POP     HL
 
         ; Referenced from EA7E
@@ -4920,7 +4928,7 @@ LEB5E:  DEC     HL
 LEB6D:  POP     HL
         RES     7,(HL)
         CALL    LEB76
-        JP      LEC40
+        JP      SCROLL
 
         ; Referenced from EB70
         ; --- START PROC LEB76 ---
@@ -4931,14 +4939,14 @@ LEB77:  INC     HL
         LD      A,(HL)
         PUSH    HL
         PUSH    BC
-        CALL    LEA58
+        CALL    PRICAR
         POP     BC
         POP     HL
         DJNZ    LEB77
         LD      A,0Dh
-        CALL    LEA58
+        CALL    PRICAR
         LD      A,0Ah
-        CALL    LEA58
+        CALL    PRICAR
         RET
 
 LEB8D:  DB      0FFh
@@ -5119,19 +5127,17 @@ LEC3C:  ADD     A,30h           ; '0'
         LD      (HL),A
         RET
 
-        ; Referenced from D21A, D298, D7BA, D7C8, D7D8, D833, EB73, FFFA, D192, D5F6, D630, D657, EE9C, EFD5, EF0F, EF1B, EA61, D742, EA83
-        ; --- START PROC LEC40 ---
-LEC40:  LD      HL,0A840h       
+;
+; SCROLL Scrolla il video il alto di una riga e ripulisce 
+; la riga più in basso
+;
+;$EC40        
+SCROLL: LD      HL,0A840h       
         LD      DE,0A800h       
         LD      BC,03C0h        
         LDIR
-
-        ; Referenced from E2C0, ED3F, D1B7, D3F7, D65A, EF86, D6EF
-        ; --- START PROC LEC4B ---
 LEC4B:  LD      HL,0ABC0h       
         LD      B,3Fh           ; '?'
-
-        ; Referenced from EC53
 LEC50:  LD      (HL),20h        ; ' '
         INC     HL
         DJNZ    LEC50
@@ -5214,7 +5220,7 @@ INT_KEYBOARD:
         LD      A,(KEYPRESS)
         CP      ESCAPE+128
         JR      Z,INT_EXIT         ; se c'è un tasto ESC premuto non ancora gestito esce senza fare niente
-        IN      A,(IO_KEYBOARD)
+        IN      A,(KEYBOARD)
         SET     7,A                ; imposta il bit 7 per indicare "tasto premuto" ma non ancora gestito
         CP      ESCAPE+128
         JR      Z, HANDLE_ESC_KEY  ; Se premuto ESC tratta in maniera speciale        
@@ -5488,7 +5494,7 @@ LEE70:  LD      B,01h
         CP      47h             ; 'G'
         JR      NZ,LEE5D
         LD      (0ABC4h),A
-        CALL    LEC40
+        CALL    SCROLL
         CALL    LEC6F
         JP      0099h
 
@@ -5545,13 +5551,13 @@ LEF01:  LD      A,49h           ; 'I'
         CALL    LEC56
         LD      DE,0080h        
         CALL    LEF21
-        CALL    LEC40
+        CALL    SCROLL
         LD      DE,008Ch        
         CALL    LEF21
         CALL    LEC56
 
         ; Referenced from EDD4, EE55
-LEF1B:  CALL    LEC40
+LEF1B:  CALL    SCROLL
 
         ; Referenced from EF83
         ; --- START PROC LEF1E ---
@@ -5659,7 +5665,7 @@ LEF9F:  CALL    RDTAST
         LD      (IX+01h),A
         LD      A,B
         LD      (IX+00h),A
-        CALL    LEC40
+        CALL    SCROLL
         POP     HL
         JR      LEF7C
 
@@ -6001,7 +6007,7 @@ LF1D9:  CALL    RDTAST
 LF1DF:  LDIR
         LD      HL,0F2F9h       
         CALL    LF041
-        LD      A,(0124h)
+        LD      A,(FLARIG)
         CALL    LF23D
         LD      HL,00D2h        
         LD      (HL),44h        ; 'D'
@@ -6059,9 +6065,9 @@ LF24D:  LDIR
 
         ; Entry Point
         ; --- START PROC LF250 ---
-LF250:  LD      A,(0124h)
+LF250:  LD      A,(FLARIG)
         XOR     01h
-        LD      (0124h),A
+        LD      (FLARIG),A
         CALL    LF23D
         LD      HL,0F374h       
         JR      LF238
@@ -6156,7 +6162,7 @@ LOOP_LF2C4:
 END_RAM:  
         LD      (RAMSIZE),HL            ; salva fine RAM
         LD      A,01h                   
-        LD      (0124h),A
+        LD      (FLARIG),A
         LD      A,2Fh          
         LD      (0121h),A
         SUB     05h
@@ -8885,7 +8891,7 @@ LFF79:  JP      LEA8D
 
         ; Entry Point
         ; --- START PROC LFF7C ---
-LFF7C:  JP      LEA58
+LFF7C:  JP      PRICAR
 
         ; Entry Point
         ; --- START PROC LFF7F ---
@@ -9053,7 +9059,7 @@ LFFF7:  JP      RDTAST
 
         ; Entry Point
         ; --- START PROC LFFFA ---
-LFFFA:  JP      LEC40
+LFFFA:  JP      SCROLL
 
         ; Entry Point
         ; --- START PROC LFFFD ---

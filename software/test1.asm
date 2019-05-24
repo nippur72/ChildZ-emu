@@ -1,5 +1,4 @@
-PROMPT equ $ec4b
-RDTAST equ $ec98
+include "childz.asm"
 
 org $0400
 
