@@ -4720,17 +4720,17 @@ LEA3A:  LD      A,(0123h)
         ; Referenced from FF7C, EB7B, EB84, EB89, EA45, EA28, E9EC, E9F5
         ; --- START PROC PRICAR ---
 
-; Consente di stampare il carattere contenuto in A sulla LA36 o	sul video
+; Consente di stampare il carattere contenuto in A sulla LA36 o sul video
 ; a seconda se il bit ZERO di FLARIG è 1 o 0.
 ;$EA58
 PRICAR:	
         LD      HL,FLARIG        
         BIT     0,(HL)
-        JR      NZ,LEADD
+        JR      NZ,PRLA36
         CP      0Ah
         JP      Z,SCROLL
         CP      07h
-        JR      Z,LEADD
+        JR      Z,PRLA36
         CP      0Dh
         JR      NZ,LEA76
         CALL    LEA8D
@@ -4738,7 +4738,7 @@ PRICAR:
         LD      (011Eh),HL
         RET
 
-        ; Referenced from EA6A
+; prints character 0Dh to video        
 LEA76:  LD      HL,(011Eh)
         LD      D,A
         LD      A,0FAh
@@ -4749,8 +4749,6 @@ LEA76:  LD      HL,(011Eh)
         PUSH    HL
         CALL    SCROLL
         POP     HL
-
-        ; Referenced from EA7E
 LEA87:  LD      (HL),A
         INC     HL
         LD      (011Eh),HL
@@ -4809,15 +4807,13 @@ LEACF:  PUSH    AF
         POP     AF
         RET
 
-        ; Referenced from FF73, EA5D, EA66
-        ; --- START PROC LEADD ---
-LEADD:  SET     7,A
+; Outputs character in A to printer LA36
+;$EADD        
+PRLA36: SET     7,A
         LD      (00C8h),A
         LD      B,09h
         IN      A,(0D9h)
         SET     7,A
-
-        ; Referenced from EAFA
 LEAE8:  OUT     (0D9h),A
         CALL    LEACF
         LD      HL,00C8h        
@@ -4825,8 +4821,6 @@ LEAE8:  OUT     (0D9h),A
         SET     7,A
         JR      Z,LEAF8
         RES     7,A
-
-        ; Referenced from EAF4
 LEAF8:  RRC     (HL)
         DJNZ    LEAE8
         RES     7,A
@@ -8879,7 +8873,7 @@ LFF70:  JP      LEB04
 
         ; Entry Point
         ; --- START PROC LFF73 ---
-LFF73:  JP      LEADD
+LFF73:  JP      PRLA36
 
         ; Entry Point
         ; --- START PROC LFF76 ---
