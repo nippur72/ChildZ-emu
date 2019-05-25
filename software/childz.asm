@@ -5,11 +5,13 @@
 ; low memory workspace 
 KEYPRESS   EQU 0098h   ; stores last key pressed. bit 7: 1=key not yet processed
 TEMPO      EQU 00B2h   ; (word) wait time for the WAIT routine
+TEMPO_SCRV EQU 00CBh   ; wait time for SCRV routine
 CURPOS     EQU 011Eh   ; (word) address in video ram where the characters are being printed with PRICAR
 FLARIG     EQU 0124h   ; bit 7: 1 output to printer, 0 to video
 RAMSIZE    EQU 0131h   ; (word) size of the ram calculated at boot
 
 ; EPROM routines
+SCRV        EQU $E23D
 SCROLL      EQU $EC40
 PROMPT      EQU $EC4B
 RDTAST      EQU $EC98
@@ -28,5 +30,5 @@ SCREENROWS EQU 16     ; number of video rows
 
 ; I/O ports
 KEYBOARD   EQU 0CDh   ; keyboard port
-
+CASSETTE   EQU $D9    ; tape port
 

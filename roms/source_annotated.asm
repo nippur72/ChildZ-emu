@@ -1,14 +1,16 @@
 ; low memory workspace 
-KEYPRESS EQU 0098h
-TEMPO    EQU 00B2h
-FLARIG   EQU 0124h
-RAMSIZE  EQU 0131h
-CURPOS   EQU 011Eh
+KEYPRESS   EQU 0098h
+TEMPO      EQU 00B2h
+TEMPO_SCRV EQU 00CBh
+FLARIG     EQU 0124h
+RAMSIZE    EQU 0131h
+CURPOS     EQU 011Eh
 
-ESCAPE   EQU 1Bh
+ESCAPE     EQU 1Bh
 
 ; I/O ports
-KEYBOARD EQU 0CDh
+KEYBOARD  EQU $CD
+CASSETTE  EQU $D9
 
         ORG     0D000h
 
@@ -3089,32 +3091,45 @@ LE1BE:  LD      (TEMPO),HL
         ; Referenced from E1E2, E1AA
         ; --- START PROC LE1C8 ---
 LE1C8:  LD      (TEMPO),HL
-        OUT     (0D9h),A
+        OUT     (CASSETTE),A
         CALL    WAIT
         RET
 
-        ; Referenced from E6E0, E2C3
-        ; --- START PROC LE1D1 ---
-LE1D1:  LD      A,0FFh
-        OUT     (0DBh),A
-        LD      A,55h           ; 'U'
-        OUT     (0DBh),A
-        LD      A,07h
-        OUT     (0DBh),A
-        LD      HL,0B0B0h       
-        LD      A,08h
-        CALL    LE1C8
-        LD      A,01h
-        LD      (TEMPO+1),A
-        LD      B,50h           ; 'P'
-        LD      A,50h           ; 'P'
-        LD      (00CBh),A
-        CALL    LE23D
-        LD      A,0A0h
-        LD      (00CBh),A
-        LD      B,01h
-        CALL    LE23D
-        XOR     A
+; inizializza il registratore e scrive i primi 80 bits di sincrconizzazione
+; nel dettaglio:
+; 1) scrive la sequenza $FF,$55,$07 sulla porta $DB (inizializza la PIO?)
+; 2) alza il bit 4 sulla porta cassetta ($D9) attendendendo un tempo WAIT W=$B0B0 (motore?)
+; 3) scrive 80 impulsi con tempo W=$5001 (segnale alto), W=$0101 (segnale basso)
+; 4) scrive un impulso con tempo W=$a001 (segnale alto), W=$0101 (segnale basso)
+; 5) azzera la locazione $c7
+; il segnale tape è il bit 1 della porta $d9 che viene alzato e abbassato
+
+;$E1D1
+INIOUT: LD      A,0FFh      ; manda la sequenza $FF,$55,$07
+        OUT     (0DBh),A    ; sulla porta $DB
+        LD      A,55h       ;    
+        OUT     (0DBh),A    ;
+        LD      A,07h       ;
+        OUT     (0DBh),A    ;
+
+        LD      HL,$B0B0         ; (176+1) * 250us * 176 = ~7 secondi
+        LD      A,&b00001000     ; alza il bit 3 sulla porta cassette (bit 3 = motore?)
+        CALL    LE1C8            ; scrive su cassetta e attende
+
+        LD      A,01h            ; imposta a 1 il moltiplicatore di WAIT
+        LD      (TEMPO+1),A      ; adesso sono 44.25 msec
+
+        LD      B,80             ; 80 bits di sincronismo
+        LD      A,50h            ;
+        LD      (TEMPO_SCRV),A   ; 
+        CALL    SCRV             ;
+
+        LD      A,0A0h           ;
+        LD      (TEMPO_SCRV),A   ;
+        LD      B,01h            ;
+        CALL    SCRV             ;
+
+        XOR     A                ; azzera $C7
         LD      (00C7h),A
         RET
 
@@ -3144,27 +3159,31 @@ LE208:  PUSH    HL
         CALL    LE277
         LD      B,50h           ; 'P'
         LD      A,50h           ; 'P'
-        LD      (00CBh),A
-        CALL    LE23D
+        LD      (TEMPO_SCRV),A
+        CALL    SCRV
         RET
 
-        ; Referenced from E6F9, E239, E1F1, E1FB, E295, E25C
-        ; --- START PROC LE23D ---
-LE23D:  PUSH    BC
-        LD      A,(00CBh)
-        LD      (TEMPO),A
-        CALL    WAIT
-        IN      A,(0D9h)
-        OR      02h
-        OUT     (0D9h),A
-        LD      A,01h
-        LD      (TEMPO),A
-        CALL    WAIT
-        IN      A,(0D9h)
-        AND     0FDh
-        OUT     (0D9h),A
+; Scrive tanti bits di sincronismo su tape output quanti sono indicati in B.
+;$E23D
+SCRV:   PUSH    BC
+        LD      A,(TEMPO_SCRV)  ; TEMPO = TEMPO_SCRV
+        LD      (TEMPO),A       ; 
+        CALL    WAIT            ; attende 81 * 250 = ~20ms
+
+        IN      A,(CASSETTE)    ; setta il bit 1 della porta cassetta
+        OR      &b00000010      ;
+        OUT     (CASSETTE),A    ;
+
+        LD      A,01h           ; attende 500us
+        LD      (TEMPO),A       ;
+        CALL    WAIT            ;
+
+        IN      A,(CASSETTE)    ; resetta il bit 1 della porta cassetta
+        AND     &b11111101      ;
+        OUT     (CASSETTE),A    ;
+
         POP     BC
-        DJNZ    LE23D
+        DJNZ    SCRV            ; ripete per B bits
         RET
 
         ; Referenced from E6EA, E21F, E229, E26E
@@ -3200,18 +3219,18 @@ LE277:  LD      A,(HL)
         ; Referenced from E299
 LE27D:  PUSH    BC
         LD      A,12h
-        LD      (00CBh),A
+        LD      (TEMPO_SCRV),A
         LD      A,(00C8h)
         RRCA
         LD      (00C8h),A
         BIT     7,A
         JR      NZ,LE293
         LD      A,06h
-        LD      (00CBh),A
+        LD      (TEMPO_SCRV),A
 
         ; Referenced from E28C
 LE293:  LD      B,01h
-        CALL    LE23D
+        CALL    SCRV
         POP     BC
         DJNZ    LE27D
         RET
@@ -3236,7 +3255,7 @@ LE29C:  CALL    LEC8A
 
         ; Referenced from E2AD
 LE2C0:  CALL    LEC4B
-        CALL    LE1D1
+        CALL    INIOUT
         CALL    LE203
         LD      HL,0E2DDh       
         LD      BC,0009h        
@@ -4142,7 +4161,7 @@ LE6D4:  LD      A,(0102h)
 
         ; Referenced from E6D9, E733
         ; --- START PROC LE6E0 ---
-LE6E0:  CALL    LE1D1
+LE6E0:  CALL    INIOUT
         LD      HL,(00FAh)
         LD      BC,(00FCh)
         CALL    LE25F
@@ -4150,8 +4169,8 @@ LE6E0:  CALL    LE1D1
         CALL    LE277
         LD      B,50h           ; 'P'
         LD      A,B
-        LD      (00CBh),A
-        CALL    LE23D
+        LD      (TEMPO_SCRV),A
+        CALL    SCRV
         LD      HL,0B0B0h       
 
         ; Referenced from E776
