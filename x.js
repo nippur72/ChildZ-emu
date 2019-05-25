@@ -717,3 +717,38 @@ function lfsr(deb) {
       }          
    }
 })();
+
+// installs debug on RST 38
+(function() {
+   // writes a RET at 0038h
+   mem_write(0x0038, 0xc9);
+   // install debug function
+   debugBefore = (function() {
+      let previous_pc = 0;
+      return function() {     
+         const pc = cpu.getState().pc;    
+         if(pc === 0x0038) {
+            // there was a call to RST 38
+            console.log(`RST 38h called from ${hex(previous_pc, 4)}`);
+            console.log(cpu_status());
+         }
+      };
+   })();
+   console.log("debug RST 38h installed");
+})();
+
+
+// breakpoints debugger
+let brk = [];
+(function() {
+   // install debug function
+   debugBefore = (function() {
+      return function() {     
+         const pc = cpu.getState().pc;    
+         if(brk[pc] === true) {
+            console.log(cpu_status());
+         }
+      };
+   })();
+   console.log("breakpoints debugger installed");
+})();
