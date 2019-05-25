@@ -110,7 +110,6 @@ async function save_file(filename, start, end) {
    await writeFile(filename, bytes);
 
    console.log(`saved "${filename}" ${bytes.length} bytes from ${hex(start,4)}h to ${hex(end,4)}h`);
-   cpu.reset();
 }
 
 async function save_disk(diskname, drive) {      
@@ -122,7 +121,6 @@ async function save_disk(diskname, drive) {
    const bytes = drives[drive-1].floppy;
    await writeFile(diskname, bytes);
    console.log(`disk in drive ${drive} saved as "${diskname}" (${bytes.length} bytes)`);
-   cpu.reset();
 }
 
 async function load_disk(diskname, drive) {   
@@ -134,7 +132,6 @@ async function load_disk(diskname, drive) {
    const bytes = await readFile(diskname);
    drives[drive-1].floppy = bytes;   
    console.log(`disk in drive ${drive} has been loaded with "${diskname}" (${bytes.length} bytes)`);
-   cpu.reset();
 }
 
 async function remove(filename) {   

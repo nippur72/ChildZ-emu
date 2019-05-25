@@ -85,7 +85,6 @@ function pasteLine(text) {
    }
    mem_write_word(0x85f7, 0x8289);
    //simulateKey("End");
-   cpu.reset();
    */
 }
 
