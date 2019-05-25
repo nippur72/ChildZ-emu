@@ -17,15 +17,6 @@ function keyDown(e) {
 
    // *** special (non characters) keys ***
 
-   /*
-   // RESET key is mapped as ALT+R
-   if(e.code == "KeyR" && e.altKey) {
-      cpu.reset();      
-      e.preventDefault(); 
-      return;
-   }
-   */
-
    // ALT+P is power OFF/ON
    if(e.code == "KeyP" && e.altKey && e.ctrlKey) {
       power();
