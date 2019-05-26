@@ -2869,7 +2869,7 @@ LE023:  DB      0CDh
         ; Entry Point
         ; --- START PROC LE032 ---
 LE032:  CALL    LEC8A
-        CALL    LE18B
+        CALL    INIIN
         LD      HL,00BBh        
         LD      BC,000Ch        
         CALL    LE172
@@ -3056,28 +3056,33 @@ LE178:  PUSH    BC
         DEC     BC
         JR      LE172
 
-        ; Referenced from E035, E758
-        ; --- START PROC LE18B ---
-LE18B:  LD      A,0FFh
+; Avvia il tape cassette di lettura, inizializza la porta PIO1B	per input,
+; legge i bits di sincronismo, azzera CKSUM.	
+;$E18B
+INIIN:  LD      A,0FFh
         OUT     (0DBh),A
-        LD      A,55h           ; 'U'
+        LD      A,55h           
         OUT     (0DBh),A
         LD      HL,0E0FFh       
         LD      (0072h),HL
-        LD      A,72h           ; 'r'
+        LD      A,72h           
         OUT     (0DBh),A
         LD      A,97h
         OUT     (0DBh),A
         LD      A,0FEh
-        OUT     (0DBh),A
-        LD      HL,0A0A0h       
-        LD      A,20h           ; ' '
-        CALL    LE1C8
-        LD      HL,0101h        
-        LD      (TEMPO),HL
-        XOR     A
+        OUT     (0DBh),A      ; manda FF,55,72,97,FE sulla porta DBh
+
+        LD      HL,0A0A0h     ; tempo    
+        LD      A,&b‭00100000‬  ; valore della porta tape    
+        CALL    WAITAPE       ; scrive sulla porta tape e attende
+
+        LD      HL,0101h      ; reimposta il tempo al minimo 
+        LD      (TEMPO),HL    ; 
+
+        XOR     A             ; azzera checksum
         LD      (CHECKSUM),A
         LD      (00CAh),A
+
         CALL    LE115
         RET
 
@@ -3086,12 +3091,12 @@ LE18B:  LD      A,0FFh
 LE1BE:  LD      (TEMPO),HL
         CALL    WAIT
         XOR     A
-        OUT     (0D9h),A
+        OUT     (CASSETTE),A
         RET
 
-        ; Referenced from E1E2, E1AA
-        ; --- START PROC LE1C8 ---
-LE1C8:  LD      (TEMPO),HL
+;$E1C8
+WAITAPE:
+        LD      (TEMPO),HL
         OUT     (CASSETTE),A
         CALL    WAIT
         RET
@@ -3115,7 +3120,7 @@ INIOUT: LD      A,0FFh      ; manda la sequenza $FF,$55,$07
 
         LD      HL,$B0B0         ; (176+1) * 250us * 176 = ~7 secondi
         LD      A,&b00001000     ; alza il bit 3 sulla porta cassette (bit 3 = motore?)
-        CALL    LE1C8            ; scrive su cassetta e attende
+        CALL    WAITAPE          ; scrive su cassetta e attende
 
         LD      A,01h            ; imposta a 1 il moltiplicatore di WAIT
         LD      (TEMPO+1),A      ; adesso sono 44.25 msec
@@ -4223,7 +4228,7 @@ LE73E:  LD      BC,(00FEh)
 
         ; Referenced from E783
         ; --- START PROC LE758 ---
-LE758:  CALL    LE18B
+LE758:  CALL    INIIN
         LD      HL,(0107h)
         LD      BC,(0109h)
         CALL    LE172
