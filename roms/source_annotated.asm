@@ -1,6 +1,7 @@
 ; low memory workspace 
 KEYPRESS   EQU 0098h
 TEMPO      EQU 00B2h
+CHECKSUM   EQU 00C7h   ; (byte) used as a checksum
 TEMPO_SCRV EQU 00CBh
 FLARIG     EQU 0124h
 RAMSIZE    EQU 0131h
@@ -2873,7 +2874,7 @@ LE032:  CALL    LEC8A
         LD      BC,000Ch        
         CALL    LE172
         CALL    LE144
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CP      (HL)
         JR      Z,LE04F
 
@@ -2893,7 +2894,7 @@ LE04F:  LD      HL,(00C1h)
         LD      BC,(00BFh)
         CALL    LE172
         CALL    LE144
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CP      (HL)
         JR      NZ,LE04A
         LD      HL,0E0F5h       
@@ -3048,9 +3049,9 @@ LE178:  PUSH    BC
         POP     HL
         POP     BC
         LD      (HL),A
-        LD      A,(00C7h)
+        LD      A,(CHECKSUM)
         ADD     A,(HL)
-        LD      (00C7h),A
+        LD      (CHECKSUM),A
         INC     HL
         DEC     BC
         JR      LE172
@@ -3075,7 +3076,7 @@ LE18B:  LD      A,0FFh
         LD      HL,0101h        
         LD      (TEMPO),HL
         XOR     A
-        LD      (00C7h),A
+        LD      (CHECKSUM),A
         LD      (00CAh),A
         CALL    LE115
         RET
@@ -3130,7 +3131,7 @@ INIOUT: LD      A,0FFh      ; manda la sequenza $FF,$55,$07
         CALL    SCRV             ;
 
         XOR     A                ; azzera $C7
-        LD      (00C7h),A
+        LD      (CHECKSUM),A
         RET
 
         ; Referenced from E2C6
@@ -3147,7 +3148,7 @@ LE208:  PUSH    HL
         POP     HL
         INC     HL
         DJNZ    LE208
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CALL    LE277
         LD      BC,(00BDh)
         LD      HL,(00C1h)
@@ -3155,7 +3156,7 @@ LE208:  PUSH    HL
         LD      BC,(00BFh)
         LD      HL,(00C3h)
         CALL    LE25F
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CALL    LE277
         LD      B,50h           ; 'P'
         LD      A,50h           ; 'P'
@@ -3206,9 +3207,9 @@ LE265:  PUSH    HL
 
         ; Referenced from E20A, E267
         ; --- START PROC LE270 ---
-LE270:  LD      A,(00C7h)
+LE270:  LD      A,(CHECKSUM)
         ADD     A,(HL)
-        LD      (00C7h),A
+        LD      (CHECKSUM),A
 
         ; Referenced from E6F0, E215, E22F
         ; --- START PROC LE277 ---
@@ -4165,7 +4166,7 @@ LE6E0:  CALL    INIOUT
         LD      HL,(00FAh)
         LD      BC,(00FCh)
         CALL    LE25F
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CALL    LE277
         LD      B,50h           ; 'P'
         LD      A,B
@@ -4227,7 +4228,7 @@ LE758:  CALL    LE18B
         LD      BC,(0109h)
         CALL    LE172
         CALL    LE144
-        LD      HL,00C7h        
+        LD      HL,CHECKSUM        
         CP      (HL)
         LD      HL,(0114h)
         JR      Z,LE773
