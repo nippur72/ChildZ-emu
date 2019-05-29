@@ -1,4 +1,4 @@
-yaza.exe
-yazd.exe
 node_modules/
-sbc_NascomBasic32k/
+*.lst
+*.sym
+software/msbasic/*.asm

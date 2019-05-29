@@ -752,3 +752,85 @@ let brk = [];
    })();
    console.log("breakpoints debugger installed");
 })();
+
+
+// installs debug on RST 38
+(function() {
+   // writes a RET at 0038h
+   mem_write(0x0038, 0xc9);
+   // install debug function
+   debugBefore = (function() {
+      let previous_pc = 0;
+      return function() {     
+         const pc = cpu.getState().pc;    
+         if(pc === 0x0038) {
+            // there was a call to RST 38
+            console.log(`RST 38h called from ${hex(previous_pc, 4)}`);
+            console.log(cpu_status());
+         }
+      };
+   })();
+   console.log("debug RST 38h installed");
+})();
+
+
+// prints char in A on RST 38H
+(function() {
+   let col = 0;
+   let row = 0;
+   let lastc = 0;
+
+   function scrollup() {
+      for(let k=0xa800;k<0xa800+1024-64;k++) {
+         let c = mem_read(k+64);
+         mem_write(k,c);
+      }
+      for(let k=0xa800+15*64;k<0xa800+16*64;k++) mem_write(k,32);
+   }
+
+   function chrout(a) {
+      let address = 0xa800 + row * 64 + col;
+      mem_write(address, a);
+      col++;
+      if(col === 63) {
+         col = 0;
+         row = row + 1;
+         if(row === 16) {
+            row = row - 1;
+            scrollup();
+         }
+      }
+   }
+
+   // writes a RET at 0038h
+   mem_write(0x0038, 0xc9);
+
+   // install debug function
+   debugBefore = (function() {
+      return function() {     
+         const { a, pc } = cpu.getState();    
+         if(pc === 0x0038) {
+            if(a !== lastc) {
+               chrout(a);
+               console.log(`${a}-${hex(pc,4)}`)
+            }
+            lastc = a;
+         }
+      };
+   })();
+   console.log("charout on RST 38h installed");
+})();
+
+// breakpoints debugger
+(function() {
+   // install debug function
+   debugBefore = (function() {
+      return function() {     
+         const { pc, sp } = cpu.getState();    
+         if(pc >= 0x6000 && pc <= 0x7fff) {
+            console.log(`${hex(pc,4)} sp ${hex(sp,4)}`);
+         }
+      };
+   })();
+   console.log("breakpoints debugger installed");
+})();
