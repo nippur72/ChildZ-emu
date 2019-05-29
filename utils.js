@@ -65,8 +65,6 @@ function mem_read_word(address) {
 
 async function crun(filename) {
    load(filename);
-   //await print_string("\nrun:\n");
-   //pasteLine("RUN\r\n");
 }
 
 function drag_drop_disk(diskname, bytes) {
@@ -74,61 +72,13 @@ function drag_drop_disk(diskname, bytes) {
    //writeFile(diskname, bytes);
 }
 
-function pasteLine(text) {
-   /*
-   // keyboard buffer: 8289-838b  
-   // key repeat address: 85F7
-   
+function paste(text) {   
    for(let t=0;t<text.length;t++) {
       const v = text.charCodeAt(t);
-      mem_write(0x8289 + t, v);
-   }
-   mem_write_word(0x85f7, 0x8289);
-   //simulateKey("End");
-   */
-}
-
-function pasteBasic(text) {   
-   /*
-   const lines = text.split("\n");   
-   for(let t=0; t<lines.length; t++) {
-      const linea = lines[t];
-      console.log(linea);
-      pasteBasicLine(linea);      
-   }
-   console.log("pasted!");   
-   */
-}
-
-function pasteBasicLine(line) {
-   /*
-   for(let t=0; t<line.length; t++) {
-      let char = line.charAt(t);
-      if(char === "§") char = "`";  // § is alias for ` to ease pasting from console
-      pasteBasicChar(char);
-   }
-   pasteBasicChar("Enter");
-   */
-}
-
-function pasteBasicChar(char) {
-   /*
-   const old_cursor_pos = mem_read_word(0x85e2);
-   const key = evkey(char);
-
-   keyDown(key);     
-   for(let t=1; t<50 && mem_read_word(0x85e2) === old_cursor_pos; t++) renderAllLines();   
-   keyUp(key);
-   renderAllLines();
-   */
-}
-
-function evkey(pcKey) {
-   const ev = {
-      key: pcKey,
-      preventDefault: ()=>{}
-   };
-   return ev;
+      key_pressed_port_cd = v;
+      cpu.interrupt(false, 0x70); // trigger interrupt mode 2 (im 2), jumps at $0070
+      renderAllLines();
+   }   
 }
 
 function zap() {      

@@ -108,21 +108,10 @@ function droppedFile(outName, bytes) {
       tapeBuffer = info.channelData[0];
       tapeLen = tapeBuffer.length;
       tapePtr = 0;
-      tapeHighPtr = 0;      
-
-      // CRUN run only if in immediate mode
-      if(mem_read_word(0x803f) === 0xffff) pasteLine("CRUN\r\n");
+      tapeHighPtr = 0;
             
       return;
-   }
-
-   const dsk = /\.nic$/i;
-   if(dsk.test(outName)) {
-      drag_drop_disk(outName, bytes);
-      load(outName, 1);
-      pasteLine("DIR\r\n");
-      return;
-   }
+   }   
 
    const bin = /\.bin$/i;
    if(bin.test(outName)) {     
