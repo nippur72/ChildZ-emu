@@ -43,3 +43,11 @@ To enable "autoload":
 - refresh the browser, the program will be loaded in memory and make it RUN
 
 When you no longer want the file to be autoloaded, delete `autoload.bin` and run again `node makeautoload`.
+
+PASTE TEXT
+==========
+
+`paste(text)` pastes strings of text from JavaScript console into the ChildZ, emulating keyboard
+key presses.
+
+
