@@ -83,10 +83,7 @@ function loadBytes(bytes, address, fileName) {
 
    for(let i=0,t=startAddress;t<=end;i++,t++) {
       mem_write(t, bytes[i]);
-   }
-
-   // modify end of basic program pointer   
-   //if(startAddress === 0x8995) mem_write_word(0x83E9, end+1);   
+   }   
 
    if(fileName === undefined) fileName = "autoload";
    console.log(`loaded "${fileName}" ${bytes.length} bytes from ${hex(startAddress,4)}h to ${hex(end,4)}h`);

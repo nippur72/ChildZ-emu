@@ -148,7 +148,9 @@ function parseQueryStringCommands() {
    }
 
    if(options.load !== undefined) {
-      const [name, address] = options.load.split(",");  
+      let [name, address] = options.load.split(",");  
+
+      if(address !== undefined) address = parseInt(address, 16);
 
       fetchProgramAll(name, address);            
    }
