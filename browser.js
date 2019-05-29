@@ -96,7 +96,7 @@ dropZone.addEventListener('drop', e => {
    }
 });
 
-function droppedFile(outName, bytes) {   
+function droppedFile(outName, bytes, address) {   
 
    const wav = /\.wav$/i;
    if(wav.test(outName)) {
@@ -116,7 +116,7 @@ function droppedFile(outName, bytes) {
    const bin = /\.bin$/i;
    if(bin.test(outName)) {     
       writeFile(outName, bytes)
-      crun(outName);         
+      crun(outName, address);         
    }
 }
 
@@ -148,8 +148,9 @@ function parseQueryStringCommands() {
    }
 
    if(options.load !== undefined) {
-      const name = options.load;      
-      fetchProgramAll(name);            
+      const [name, address] = split(options.load,",");  
+
+      fetchProgramAll(name, address);            
    }
 
    if(options.nodisk === true) {
@@ -201,7 +202,7 @@ function parseQueryStringCommands() {
    }
 }
 
-async function fetchProgramAll(name) {
+async function fetchProgramAll(name, address) {
    const candidates = [
       name,
       `${name}.bin`,
@@ -214,13 +215,13 @@ async function fetchProgramAll(name) {
    ];
 
    for(let t=0;t<candidates.length;t++) {
-      if(await fetchProgram(candidates[t])) return;   
+      if(await fetchProgram(candidates[t], address)) return;   
    }
 
    console.log(`cannot load "${name}"`);
 }
 
-async function fetchProgram(name)
+async function fetchProgram(name, address)
 {
    console.log(`wanting to load ${name}`);
    try
@@ -228,7 +229,7 @@ async function fetchProgram(name)
       const response = await fetch(`software/${name}`);
       if(response.status === 404) return false;
       const bytes = new Uint8Array(await response.arrayBuffer());
-      droppedFile(name, bytes);
+      droppedFile(name, bytes, address);
       return true;
    }
    catch(err)

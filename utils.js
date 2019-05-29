@@ -63,8 +63,8 @@ function mem_read_word(address) {
    return lo+hi*256;
 }
 
-async function crun(filename) {
-   load(filename);
+async function crun(filename, address) {
+   load(filename, address);
 }
 
 function drag_drop_disk(diskname, bytes) {
