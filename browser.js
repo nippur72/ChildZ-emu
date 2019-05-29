@@ -152,7 +152,7 @@ function parseQueryStringCommands() {
 
       if(address !== undefined) address = parseInt(address, 16);
 
-      fetchProgramAll(name, address);            
+      setTimeout(()=>fetchProgramAll(name, address), 1000);            
    }
 
    if(options.nodisk === true) {
