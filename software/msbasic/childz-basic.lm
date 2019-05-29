@@ -1,0 +1,249 @@
+include "bas32k.yaza.lm"
+
+; =================================================================================
+; this is the customization of the NASCOM MICROSOFT BASIC V4.7b to the ChildZ
+; computer system.
+;
+; - the EQU below define the memory configuration
+; - keyboard input is via ChildZ EPROM call RDTAST, macro GETKEYSTATUS and GETKEY
+; - interrupt keyboard read routine has been rewritten allowing to catch ESC key
+; - custom character output routine is provided, macro CHROUTF
+; =================================================================================
+
+; MEMORY MAP
+; from   to   description
+; ===================================================
+; 0000 - 025E ChildZ EPROM low RAM area
+; 025F - 60D3 BASIC text and variables free area
+; 60D4 - 61FF BASIC workspace
+; 6200 - 7FFF BASIC code
+; 8000 - A7FF empty
+; A800 - ABFF video RAM (visible screen page)
+; AC00 - AFFF video RAM (auxiliary page)
+; B000 - CFFF empty
+; D000 - FFFF EPROM code
+; ===================================================
+
+WRKLEN   EQU INITBE-INITAB+3 ; size of workspace
+
+PROGST   EQU $025F           ; Start of free space
+TOPMEM   EQU WRKSPC-1        ; end of free space
+WRKSPC   EQU BASICROM-300    ; BASIC Work space, need to be after free space
+STLOOK   EQU WRKSPC-1        ; PROGST-0F9H+15DH ; Start of memory test  (TODO check if needed)        
+
+BASICROM EQU $6200           ; BASIC interpreter code start address
+COLDBOOT EQU $E000           ; warm boot for monitor
+RDTAST   EQU $EC98
+
+KEYPRESS EQU 0098h  ; keyboard pressed key
+KEYBOARD EQU 0CDh   ; keyboard port
+
+; Sets Z=1 if no key is pending.
+GETKEYSTATUS MACRO
+   LD  A, (KEYPRESS)
+   BIT 7, A   
+ENDM
+
+GETKEY MACRO
+   CALL RDTAST
+   LD A, (KEYPRESS)
+ENDM
+
+INITBASIC MACRO
+   ; override EPROM keyboard read routine   
+   LD HL, INT_KEYBOARD
+   LD ($0070), HL
+ENDM
+
+; routine di lettura della tastiera che rimpiazza quella in rom at $ECB5
+INT_KEYBOARD:  
+   PUSH    AF
+   IN      A,(KEYBOARD)
+   SET     7,A                ; imposta il bit 7 per indicare "tasto premuto" ma non ancora gestito
+   LD      (KEYPRESS),A        
+   POP     AF
+   EI
+   RETI
+
+CHROUT MACRO   
+   JP CHROUTF   
+ENDM
+
+ENTERMONITOR MACRO
+   JP COLDBOOT
+ENDM
+
+VIDEORAM   EQU $A800  ; address of video memory
+SCREENCOLS EQU 64     ; number of video columns
+SCREENROWS EQU 16     ; number of video rows
+
+; COL and ROW are saved in BASIC workspace
+COL  equ    WRKSPC+0FBH     ; current character column
+ROW  equ    WRKSPC+0FCH     ; current character row
+
+;
+; outputs the character in A to video
+; all registers needs to be preserved
+;
+CHROUTF:  
+   PUSH AF
+   PUSH BC   
+   PUSH DE
+   PUSH HL
+   CALL CHROUT_INNER
+   POP  HL
+   POP  DE
+   POP  BC
+   POP  AF
+   RET
+
+CHROUT_INNER:
+   CALL FLIPCURSOR   
+
+   CP 10
+   IF EQUAL THEN 
+      CALL HANDLE_CR
+   ELSE
+      CP 13
+      IF EQUAL THEN
+         CALL HANDLE_NEWLINE
+      ELSE
+         CP 12
+         IF EQUAL THEN 
+            CALL HANDLE_FF
+         ELSE
+            CP 8
+            IF EQUAL THEN
+               CALL HANDLE_BACKSPACE
+            ELSE
+               CP 9
+               IF EQUAL THEN 
+                  CALL HANDLE_TAB
+               ELSE
+                  CALL HANDLE_CHAR
+               END IF
+            END IF
+         END IF
+      END IF
+   END IF
+
+   CALL FLIPCURSOR
+   RET
+
+; carriage return
+HANDLE_CR:   
+   XOR A         
+   LD  (COL), A  
+   RET
+
+; newline
+HANDLE_NEWLINE:
+   LD HL, ROW
+   INC (HL)
+   LD  A,(HL)
+   CP  16
+   IF EQUAL THEN
+      DEC (HL)
+      CALL SCROLLUP
+   END IF    
+   RET
+
+; form feed (CLS, clear screen)
+HANDLE_FF:
+   LD    HL, VIDEORAM
+   LD    DE, VIDEORAM+1
+   LD    BC, SCREENCOLS*SCREENROWS-1
+   LD    A, 32
+   LD    (HL), A
+   LDIR
+   XOR   A
+   LD    (COL), A
+   LD    (ROW), A
+   RET
+
+; backspace character
+HANDLE_BACKSPACE:
+   LD HL, COL
+   DEC (HL)
+   IF NEGATIVE THEN  
+      LD A, 63
+      LD (HL), A
+      LD HL, ROW      
+      DEC (HL)
+      IF NEGATIVE THEN
+         XOR A
+         LD  (HL), A
+      END IF
+   END IF
+   RET
+
+; TAB character, (not yet implemented)
+HANDLE_TAB:
+   RET   
+
+; prints normal character
+HANDLE_CHAR:
+   LD (HL), A
+   LD HL, COL
+   INC (HL)
+   LD A, (HL)
+   CP 64
+   IF EQUAL THEN
+      XOR A
+      LD (HL), A
+      LD HL, ROW
+      INC (HL)
+      LD A, (HL)
+      CP 16
+      IF EQUAL THEN
+         DEC (HL)
+         CALL SCROLLUP
+      END IF
+   END IF
+   RET
+
+; calculates HL = $A800+ROS*64+COL
+CALCADDR:
+   ld	   hl,(ROW)
+   ld	   h,0
+   add	hl,hl
+   add	hl,hl
+   add	hl,hl
+   add	hl,hl
+   add	hl,hl
+   add	hl,hl
+   ld	   de, $a800
+   add	hl,de
+   ex	   de,hl
+   ld	   hl,(COL)
+   ld	   h,0
+   add	hl,de
+   RET
+
+
+; scrolls up the video and clears the last line
+SCROLLUP:
+   ; cls
+   LD HL, VIDEORAM+SCREENCOLS
+   LD DE, VIDEORAM
+   LD BC, SCREENCOLS*(SCREENROWS-1)
+   LDIR
+   ; blank last line
+   LD HL, VIDEORAM+SCREENCOLS*(SCREENROWS-1)
+   LD DE, VIDEORAM+SCREENCOLS*(SCREENROWS-1)+1
+   LD BC, 64
+   LD A, 32
+   LD (HL), A
+   LDIR
+   RET   
+
+; invert character under cursor, simulating a block cursor
+FLIPCURSOR:   
+   PUSH  AF
+   CALL  CALCADDR
+   LD    A, (HL)   
+   XOR   128       
+   LD    (HL), A   
+   POP   AF
+   RET
+
