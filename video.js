@@ -29,15 +29,15 @@ let rgbmask_size = 3;
 let saturation = 1.0;
 
 function calculateGeometry() {
-   if(border_top    !== undefined && (border_top    > 65 || border_top    < 0)) border_top    = undefined;
-   if(border_bottom !== undefined && (border_bottom > 55 || border_bottom < 0)) border_bottom = undefined;
-   if(border_h      !== undefined && (border_h      > 40 || border_h      < 0)) border_h      = undefined;
+   if(border_top    !== undefined && (border_top    > 35 || border_top    < 0)) border_top    = undefined;
+   if(border_bottom !== undefined && (border_bottom > 35 || border_bottom < 0)) border_bottom = undefined;
+   if(border_h      !== undefined && (border_h      > 15 || border_h      < 0)) border_h      = undefined;
 
-   BORDER_V        = (border_top    !== undefined ? border_top    : 17);
-   BORDER_V_BOTTOM = (border_bottom !== undefined ? border_bottom : 23);   
-   HIDDEN_SCANLINES_TOP    = 65 - BORDER_V; 
-   HIDDEN_SCANLINES_BOTTOM = 55 - BORDER_V_BOTTOM;   
-   BORDER_H = border_h !== undefined ? border_h : 40;    
+   BORDER_V        = (border_top    !== undefined ? border_top    : 10);
+   BORDER_V_BOTTOM = (border_bottom !== undefined ? border_bottom : 10);   
+   HIDDEN_SCANLINES_TOP    = 35 - BORDER_V; 
+   HIDDEN_SCANLINES_BOTTOM = 35 - BORDER_V_BOTTOM;   
+   BORDER_H = border_h !== undefined ? border_h : 15;    
    SCREEN_W = BORDER_H + TEXT_W + BORDER_H;
    SCREEN_H = BORDER_V + TEXT_H + BORDER_V_BOTTOM;
    DOUBLE_SCANLINES = 2;
@@ -81,7 +81,8 @@ function buildPalette() {
    function setPalette(i,r,g,b) { 
       let color = applySaturation(r,g,b, saturation);
       palette[i] = 0xFF000000 | color.r | color.g << 8 | color.b << 16; 
-      halfpalette[i] = 0xFF000000 | ((color.r/2.0)|0) | ((color.g/2.0)|0) << 8 | ((color.b/2.0)|0) << 16; 
+      halfpalette[i] = 0xFF000000 | ((color.r/2.0)|0) | ((color.g/2.0)|0) << 8 | ((color.b/2.0)|0) << 16;
+      if(i==8) halfpalette[i] = 0xFF000000 | ((color.r/1.1)|0) | ((color.g/1.1)|0) << 8 | ((color.b/1.1)|0) << 16;
       if(hide_scanlines || !show_scanlines) halfpalette[i] = palette[i];
    }
 
@@ -93,9 +94,9 @@ function buildPalette() {
    setPalette( 5, 0x80, 0x30, 0xf0);  /* magenta */
    setPalette( 6, 0x6c, 0x87, 0x01);  /* yellow */
    setPalette( 7, 0xc0, 0xc0, 0xc0);  /* bright grey */
-   setPalette( 8, 0x5f, 0x5f, 0x6f);  /* dark grey */
+   setPalette( 8, 0x1f, 0x1f, 0x1f);  /* dark grey */
    setPalette( 9, 0x80, 0x80, 0xff);  /* bright blue */
-   setPalette(10, 0x50, 0xdf, 0x30);  /* bright green */
+   setPalette(10, 0x50, 0xFF, 0x50);  /* bright green */
    setPalette(11, 0x87, 0xc5, 0xff);  /* bright cyan */
    setPalette(12, 0xed, 0x50, 0x8c);  /* bright red */
    setPalette(13, 0xff, 0x90, 0xff);  /* bright magenta */
@@ -105,7 +106,7 @@ function buildPalette() {
 
 const foreground_color = 10;
 const background_color = 0;
-const border_color     = 0;
+const border_color     = 8;
 
 // #region rendering at the cycle level
 
@@ -178,16 +179,17 @@ function drawFrame_y_text(y)
       let bit76 = (code & (64+128) ) >> 6;
 
       let fg = 0;
-           if(bit6 === 0) fg = 7;
-      else if(bit6 === 1) fg = 15;
+      let bg = 8;
+           if(bit6 === 0) fg = 10;
+      else if(bit6 === 1) fg = 10;
       
       const bitmap = (y_offset < 2 || y_offset > 9) ? 0xFF : charset[startchar + y_offset_rotated];
 
       for(let xx=0;xx<8;xx++) {
          let pixel_color;
          
-         if(bit7 == 0) pixel_color = (bitmap & (128>>xx)) > 0 ? 0 : fg;                                                   
-         else          pixel_color = (bitmap & (128>>xx)) > 0 ? fg : 0;                                                   
+         if(bit7 == 0) pixel_color = (bitmap & (128>>xx)) > 0 ? bg : fg;                                                   
+         else          pixel_color = (bitmap & (128>>xx)) > 0 ? fg : bg;                                                   
          setPixel640(x*8+xx, y, pixel_color);
       }
    }

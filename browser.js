@@ -28,6 +28,8 @@ function onResize(e) {
    
    mask.style.background = `repeating-linear-gradient(90deg, rgba(255,0,0,${rgbmask_opacity}),  rgba(0,255,0,${rgbmask_opacity}), rgba(0,0,255,${rgbmask_opacity}))`;
    mask.style.backgroundSize = `${rgbmask_size}px`;
+   mask.style.borderRadius = "4rem";
+   canvas.style.borderRadius = "4rem";
 
    const trueHeight = canvas.offsetHeight
    hide_scanlines = (trueHeight < 512);
