@@ -100,24 +100,19 @@ CHROUTF:
 CHROUT_INNER:
    CALL FLIPCURSOR   
 
-   CP 10
-   IF EQUAL THEN 
+   IF A=10 THEN 
       CALL HANDLE_CR
-   ELSE
-      CP 13
-      IF EQUAL THEN
+   ELSE      
+      IF A=13 THEN
          CALL HANDLE_NEWLINE
-      ELSE
-         CP 12
-         IF EQUAL THEN 
+      ELSE         
+         IF A=12 THEN 
             CALL HANDLE_FF
-         ELSE
-            CP 8
-            IF EQUAL THEN
+         ELSE            
+            IF A=8 THEN
                CALL HANDLE_BACKSPACE
-            ELSE
-               CP 9
-               IF EQUAL THEN 
+            ELSE               
+               IF A=9 THEN 
                   CALL HANDLE_TAB
                ELSE
                   CALL HANDLE_CHAR
@@ -140,9 +135,8 @@ HANDLE_CR:
 HANDLE_NEWLINE:
    LD HL, ROW
    INC (HL)
-   LD  A,(HL)
-   CP  16
-   IF EQUAL THEN
+   LD  A,(HL)   
+   IF A=16 THEN
       DEC (HL)
       CALL SCROLLUP
    END IF    
@@ -186,16 +180,14 @@ HANDLE_CHAR:
    LD (HL), A
    LD HL, COL
    INC (HL)
-   LD A, (HL)
-   CP 64
-   IF EQUAL THEN
+   LD A, (HL)   
+   IF A=64 THEN
       XOR A
       LD (HL), A
       LD HL, ROW
       INC (HL)
-      LD A, (HL)
-      CP 16
-      IF EQUAL THEN
+      LD A, (HL)      
+      IF A=16 THEN
          DEC (HL)
          CALL SCROLLUP
       END IF
