@@ -1,0 +1,71 @@
+; =================
+; WAIT routine test
+; =================
+
+include "childz.asm"
+
+org $0400
+
+main:
+   ld hl, $0300
+   ld (tempo), hl
+   call WAIT
+
+   ld hl, $0301
+   ld (tempo), hl
+   call WAIT
+
+   ld hl, $0302
+   ld (tempo), hl
+   call WAIT
+
+   ld hl, $0303
+   ld (tempo), hl
+   call WAIT
+
+   ld hl, $0304
+   ld (tempo), hl
+   call WAIT
+
+   ld hl, $0305
+   ld (tempo), hl
+   call WAIT
+
+   halt
+
+
+/*
+formula
+se L=0 allora T = 53 fisso
+se L>0 allora T = ((53*(2*H+1))-2*H) * L + 53
+
+per HL=$0001 T=106 t-states => t =  106/2547600 * 1000 * 1000 = 41 usec
+
+entering WAIT with HL=0000 returned from wait WAIT at PC=0409 elpsed=53
+entering WAIT with HL=0001 returned from wait WAIT at PC=0412 elpsed=106
+entering WAIT with HL=0002 returned from wait WAIT at PC=041b elpsed=159
+entering WAIT with HL=0003 returned from wait WAIT at PC=0424 elpsed=212
+entering WAIT with HL=0004 returned from wait WAIT at PC=042d elpsed=265
+entering WAIT with HL=0005 returned from wait WAIT at PC=0436 elpsed=318
+ 
+entering WAIT with HL=0100 returned from wait WAIT at PC=0409 elpsed=53
+entering WAIT with HL=0101 returned from wait WAIT at PC=0412 elpsed=210
+entering WAIT with HL=0102 returned from wait WAIT at PC=041b elpsed=367
+entering WAIT with HL=0103 returned from wait WAIT at PC=0424 elpsed=524
+entering WAIT with HL=0104 returned from wait WAIT at PC=042d elpsed=681
+entering WAIT with HL=0105 returned from wait WAIT at PC=0436 elpsed=838
+ 
+entering WAIT with HL=0200 returned from wait WAIT at PC=0409 elpsed=53
+entering WAIT with HL=0201 returned from wait WAIT at PC=0412 elpsed=314
+entering WAIT with HL=0202 returned from wait WAIT at PC=041b elpsed=575
+entering WAIT with HL=0203 returned from wait WAIT at PC=0424 elpsed=836
+entering WAIT with HL=0204 returned from wait WAIT at PC=042d elpsed=1097
+entering WAIT with HL=0205 returned from wait WAIT at PC=0436 elpsed=1358
+
+entering WAIT with HL=0300 returned from wait WAIT at PC=0409 elpsed=53
+entering WAIT with HL=0301 returned from wait WAIT at PC=0412 elpsed=418
+entering WAIT with HL=0302 returned from wait WAIT at PC=041b elpsed=783
+entering WAIT with HL=0303 returned from wait WAIT at PC=0424 elpsed=1148
+entering WAIT with HL=0304 returned from wait WAIT at PC=042d elpsed=1513
+entering WAIT with HL=0305 returned from wait WAIT at PC=0436 elpsed=1878
+*/

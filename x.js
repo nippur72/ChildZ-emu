@@ -834,3 +834,28 @@ let brk = [];
    })();
    console.log("breakpoints debugger installed");
 })();
+
+// wait test
+(function() {
+   const WAIT = 0xE2F5;
+   let cstart = 0;
+   let counting = false;
+   // install debug function
+   debugBefore = (function() {
+      return function() {     
+         const { pc, h, l } = cpu.getState();
+         if(pc === WAIT) {
+            cstart = cycles;
+            counting = true;
+            console.log(`entering WAIT with HL=${hex(h,2)}${hex(l,2)}`);
+         }
+         else if(pc < 0x8000 && counting) {
+            console.log(`returned from wait WAIT at PC=${hex(pc,4)} elpsed=${cycles-cstart}`);
+            counting = false;
+         }
+      };
+   })();
+   console.log("WAIT routine debugger installed");
+   paste(" \rP0400G");
+})();
+
