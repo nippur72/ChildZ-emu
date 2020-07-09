@@ -835,6 +835,21 @@ let brk = [];
    console.log("breakpoints debugger installed");
 })();
 
+
+// breakpoints debugger
+(function() {
+   // install debug function
+   debugBefore = (function() {
+      return function() {     
+         const { pc, sp, h, l } = cpu.getState();    
+         if(pc == 0x042a) {
+            console.log(`${hex(pc,4)} sp ${hex(h,2)}${hex(l,2)}`);
+         }
+      };
+   })();
+   console.log("breakpoints debugger installed");
+})();
+
 // wait test
 (function() {
    const WAIT = 0xE2F5;
