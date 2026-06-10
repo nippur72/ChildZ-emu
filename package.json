@@ -4,8 +4,7 @@
   "description": "ChildZ emulator",
   "main": "elect.js",
   "scripts": {
-    "start": "electron electron.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "http-server -p 8080"
   },
   "repository": {
     "type": "git",
@@ -28,5 +27,7 @@
     "wav-decoder": "^1.3.0",
     "wav-encoder": "^1.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
 }
